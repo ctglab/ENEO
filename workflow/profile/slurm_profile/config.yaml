@@ -1,0 +1,22 @@
+cluster:
+  mkdir -p slurm-logs/{rule} &&
+  sbatch
+    --cpus-per-task={resources.ncpus}
+    --mem={resources.mem}
+    --time={resources.time}
+    --job-name=smk-{rule}-{wildcards}
+    --output=slurm-logs/{rule}/{rule}-{wildcards}-%j.out
+    --partition=g100_usr_prod
+    --account=IscrC_ENEO2
+default-resources:
+  - mem="8G"
+  - time="01:30:00"
+  - ntasks=1
+local-cores: 1
+latency-wait: 60
+jobs: 500
+keep-going: True
+rerun-incomplete: True
+printshellcmds: True
+scheduler: greedy
+use-conda: True

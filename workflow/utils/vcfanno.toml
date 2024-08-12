@@ -1,0 +1,51 @@
+[[annotation]]
+file=""
+fields=["AC","AF"]
+names=["gnomAD_AC", "gnomAD_AF"]
+ops=["self", "self"]
+
+[[annotation]]
+file=""
+fields=["ID", "AN","AC","AF"]
+names=["rs_ids","alfa_AN","alfa_AC", "alfa_AF"]
+ops=["self","self", "self", "self"]
+
+[[annotation]]
+file=""
+columns=[7]
+names=['REDI_db']
+ops=['self']    
+
+[[annotation]]
+file=""
+fields=["AF"]
+names=["exAC_AF"]
+ops=["self"]
+
+[[annotation]]
+file=""
+fields=["AN","AC","AF"]
+names=["indels_AN", "indels_AC", "indels_AF"]
+ops=["self", "self", "self"]
+
+[[annotation]]
+file=""
+fields=["ID"]
+names=["cosmic_id"]
+ops=["self"]
+
+[[postannotation]]
+fields=["gnomAD_AC", "gnomAD_AF"]
+name="gnomad_AN"
+op="lua: divfunc(gnomAD_AC, gnomAD_AF)"
+type="Float"
+
+[[postannotation]]
+name="ID"
+fields=["rs_ids","cosmic_id"]
+op="setid"
+type="String"
+
+[[postannotation]]
+fields=["rs_ids","cosmic_id"]
+op="delete"

@@ -1,0 +1,28 @@
+name: strelka2
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - _libgcc_mutex=0.1=conda_forge
+  - _openmp_mutex=4.5=2_gnu
+  - ca-certificates=2022.9.24=ha878542_0
+  - certifi=2019.11.28=py27h8c360ce_1
+  - ld_impl_linux-64=2.36.1=hea4e1c9_2
+  - libffi=3.2.1=he1b5a44_1007
+  - libgcc-ng=12.1.0=h8d9b700_16
+  - libgomp=12.1.0=h8d9b700_16
+  - libsqlite=3.39.4=h753d276_0
+  - libstdcxx-ng=12.1.0=ha89aaad_16
+  - libzlib=1.2.12=h166bdaf_4
+  - ncurses=6.3=h27087fc_1
+  - openssl=1.1.1q=h166bdaf_0
+  - pip=20.1.1=pyh9f0ad1d_0
+  - python=2.7.15=h5a48372_1011_cpython
+  - python_abi=2.7=1_cp27mu
+  - readline=8.1.2=h0f457ee_0
+  - setuptools=44.0.0=py27_0
+  - sqlite=3.39.4=h4ff8645_0
+  - strelka=2.9.10=h9ee0642_1
+  - tk=8.6.12=h27826a3_0
+  - wheel=0.37.1=pyhd8ed1ab_0
+  - zlib=1.2.12=h166bdaf_4

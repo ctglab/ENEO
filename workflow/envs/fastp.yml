@@ -1,0 +1,15 @@
+name: fastp
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - _libgcc_mutex=0.1=conda_forge
+  - _openmp_mutex=4.5=1_gnu
+  - fastp=0.23.2=h79da9fb_0
+  - isa-l=2.30.0=ha770c72_4
+  - libdeflate=1.7=h7f98852_5
+  - libgcc-ng=11.2.0=h1d223b6_11
+  - libgomp=11.2.0=h1d223b6_11
+  - libstdcxx-ng=11.2.0=he4da1e4_11
+

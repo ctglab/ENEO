@@ -1,0 +1,39 @@
+import glob
+import os
+import pandas as pd
+import sys
+from collections import Counter
+
+
+configfile: "config/config_main.yaml"
+
+include: "rules/common.smk"
+
+
+rule targets:
+    input:
+        expand(
+            config["OUTPUT_FOLDER"]
+            + config["datadirs"]["VCF_out"]
+            + "/"
+            + "{patient}_annot_germProb.vcf.gz.tbi",
+            patient=patients,
+        ),
+        expand(
+            config["OUTPUT_FOLDER"]
+            + config["datadirs"]["peptides"]
+            + "/"
+            + "{patient}.epitopes.csv",
+            patient=patients,
+        ),
+
+include: "rules/index.smk"
+include: "rules/alignment.smk"
+include: "rules/annotate_variants.smk"
+include: "rules/quantification.smk"
+include: "rules/bam_cleaning.smk"
+include: "rules/base_recalibration.smk"
+include: "rules/HLA_typing.smk"
+include: "rules/strelka.smk"
+include: "rules/filter_calls.smk"
+include: "rules/pMHC.smk"

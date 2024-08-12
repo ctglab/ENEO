@@ -1,0 +1,39 @@
+name: bcftools
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - _libgcc_mutex=0.1=conda_forge
+  - _openmp_mutex=4.5=2_gnu
+  - bcftools=1.19=h8b25389_0
+  - bzip2=1.0.8=hd590300_5
+  - c-ares=1.26.0=hd590300_0
+  - ca-certificates=2023.11.17=hbcca054_0
+  - gsl=2.7=he838d99_0
+  - htslib=1.19.1=h81da01d_0
+  - keyutils=1.6.1=h166bdaf_0
+  - krb5=1.21.2=h659d440_0
+  - libblas=3.9.0=21_linux64_openblas
+  - libcblas=3.9.0=21_linux64_openblas
+  - libcurl=8.5.0=hca28451_0
+  - libdeflate=1.18=h0b41bf4_0
+  - libedit=3.1.20191231=he28a2e2_2
+  - libev=4.33=hd590300_2
+  - libgcc-ng=13.2.0=h807b86a_4
+  - libgfortran-ng=13.2.0=h69a702a_4
+  - libgfortran5=13.2.0=ha4646dd_4
+  - libgomp=13.2.0=h807b86a_4
+  - libnghttp2=1.58.0=h47da74e_1
+  - libopenblas=0.3.26=pthreads_h413a1c8_0
+  - libssh2=1.11.0=h0841786_0
+  - libstdcxx-ng=13.2.0=h7e041cc_4
+  - libxcrypt=4.4.36=hd590300_1
+  - libzlib=1.2.13=hd590300_5
+  - ncurses=6.4=h59595ed_2
+  - openssl=3.2.0=hd590300_1
+  - perl=5.32.1=7_hd590300_perl5
+  - samtools=1.19.2=h50ea8bc_0
+  - tabix=1.11=hdfd78af_0
+  - xz=5.2.6=h166bdaf_0
+  - zstd=1.5.5=hfc55251_0
+prefix: /g100/home/userexternal/dtatoni0/.conda/envs/bcftools

@@ -1,0 +1,48 @@
+site_name: ENEO
+site_url: https://ctglab.github.io/ENEO/
+# Repository
+repo_name: ENEO
+repo_url: https://github.com/ctglab/ENEO
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - toc.integrate
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.annotation
+    - content.code.copy
+  language: en
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/toggle-switch-off-outline 
+        name: Switch to dark mode
+      primary: indigo
+      accent: indigo
+    - scheme: slate 
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode    
+      primary: black
+      accent: indigo
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - admonition
+  - pymdownx.arithmatex:
+      generic: true
+  - footnotes
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.mark
+  - attr_list
+copyright: |
+  &copy; 2024 <a href="https://github.com/ctglab"  target="_blank" rel="noopener">Computational and Translational Genomics Laboratory (CTGLab)</a>

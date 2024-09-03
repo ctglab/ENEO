@@ -72,7 +72,7 @@ resources:
   hla_script: "workflow/scripts/HLA_typing.py"
   germline_prob_script: "workflow/scripts/germProb.py"
   toml_script: "workflow/scripts/createTOML.py"
-  intervals_coding: "test_data/exons_target.BED.gz"
+  intervals_coding: "workflow/supplementary_res/intervals_coding.BED.gz"
   vcfanno_binary: "workflow/utils/vcfanno_linux64"
   vcfanno_toml: "workflow/utils/vcfanno.toml"
   vcfanno_lua: "workflow/utils/custom.lua"

@@ -1,14 +1,16 @@
-name: bcftools
+name: /Volumes/HD2/home/danilo/ENEO/.snakemake/conda/ec2d45bcdaa2aa8def76b66860ae1c72
 channels:
-  - bioconda
   - conda-forge
+  - bioconda
+  - defaults
 dependencies:
   - _libgcc_mutex=0.1=conda_forge
   - _openmp_mutex=4.5=2_gnu
   - bcftools=1.19=h8b25389_0
+  - bedtools=2.31.1=hf5e1c6e_2
   - bzip2=1.0.8=hd590300_5
   - c-ares=1.26.0=hd590300_0
-  - ca-certificates=2023.11.17=hbcca054_0
+  - ca-certificates=2024.7.4=hbcca054_0
   - gsl=2.7=he838d99_0
   - htslib=1.19.1=h81da01d_0
   - keyutils=1.6.1=h166bdaf_0
@@ -30,10 +32,10 @@ dependencies:
   - libxcrypt=4.4.36=hd590300_1
   - libzlib=1.2.13=hd590300_5
   - ncurses=6.4=h59595ed_2
-  - openssl=3.2.0=hd590300_1
+  - openssl=3.3.1=hb9d3cd8_3
   - perl=5.32.1=7_hd590300_perl5
   - samtools=1.19.2=h50ea8bc_0
   - tabix=1.11=hdfd78af_0
   - xz=5.2.6=h166bdaf_0
   - zstd=1.5.5=hfc55251_0
-prefix: /g100/home/userexternal/dtatoni0/.conda/envs/bcftools
+prefix: /Volumes/HD2/home/danilo/ENEO/.snakemake/conda/ec2d45bcdaa2aa8def76b66860ae1c72

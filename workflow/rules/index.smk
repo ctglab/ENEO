@@ -20,8 +20,11 @@ rule star_index:
         ncpus=8,
         time="6:00:00",
     shell:
-        """STAR --runMode genomeGenerate --runThreadN {threads} --genomeDir {output} \
-        --genomeFastaFiles {input.fasta} --sjdbOverhang 100 --sjdbGTFfile {input.gtf}"""
+        """
+        mkfifo genome
+        zcat {input.fasta} > genome &
+        STAR --runMode genomeGenerate --runThreadN {threads} --genomeDir {output} \
+        --genomeFastaFiles genome --sjdbOverhang 100 --sjdbGTFfile {input.gtf}"""
 
 
 rule salmon_gentrome:

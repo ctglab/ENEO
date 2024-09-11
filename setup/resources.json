@@ -1,27 +1,38 @@
 {
-    "chromosome_table": "http://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/chromAlias.txt.gz",
-    "dbsnps_ALFA": {
-        "VCF": "https://ftp.ncbi.nih.gov/snp/population_frequency/latest_release/freq.vcf.gz",
-        "index": "https://ftp.ncbi.nih.gov/snp/population_frequency/latest_release/freq.vcf.gz.tbi"
-    },
     "gsnps": {
-        "VCF": "https://storage.googleapis.com/genomics-public-data/resources/broad/hg38/v0/1000G_phase1.snps.high_confidence.hg38.vcf.gz",
-        "index": "https://storage.googleapis.com/genomics-public-data/resources/broad/hg38/v0/1000G_phase1.snps.high_confidence.hg38.vcf.gz.tbi"
+        "filetype": "VCF",
+        "url": "https://storage.googleapis.com/genomics-public-data/resources/broad/hg38/v0/1000G_phase1.snps.high_confidence.hg38.vcf.gz"
     },
-    "known_indels": {
-        "VCF": "https://storage.googleapis.com/genomics-public-data/resources/broad/hg38/v0/Homo_sapiens_assembly38.known_indels.vcf.gz",
-        "index": "https://storage.googleapis.com/genomics-public-data/resources/broad/hg38/v0/Homo_sapiens_assembly38.known_indels.vcf.gz.tbi"
+    "indels": {
+        "filetype": "VCF",
+        "url": "https://storage.googleapis.com/genomics-public-data/resources/broad/hg38/v0/Homo_sapiens_assembly38.known_indels.vcf.gz" 
     },
-    "gnomAD": {
-        "VCF": "https://storage.googleapis.com/gcp-public-data--broad-references/hg38/v0/somatic-hg38/af-only-gnomad.hg38.vcf.gz",
-        "index": "https://storage.googleapis.com/gcp-public-data--broad-references/hg38/v0/somatic-hg38/af-only-gnomad.hg38.vcf.gz.tbi"
+    "gnomad": {
+        "filetype": "VCF",
+        "url": "https://storage.googleapis.com/gcp-public-data--broad-references/hg38/v0/somatic-hg38/af-only-gnomad.hg38.vcf.gz" 
+    },
+    "dbsnps": {
+        "filetype" : "VCF",
+        "url" : "https://ftp.ncbi.nih.gov/snp/population_frequency/latest_release/freq.vcf.gz"
     },
     "REDI": {
-        "BED": "http://srv00.recas.ba.infn.it/webshare/ATLAS/donwload/TABLE1_hg38.txt.gz"
+        "filetype": "table",
+        "url": "http://srv00.recas.ba.infn.it/webshare/ATLAS/donwload/TABLE1_hg38.txt.gz" 
     },
-    "genome": "https://ftp.ensembl.org/pub/release-105/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz",
-    "gtf": "https://ftp.ensembl.org/pub/release-105/gtf/homo_sapiens/Homo_sapiens.GRCh38.105.gtf.gz",
-    "vep_cache": "https://ftp.ensembl.org/pub/release-105/variation/indexed_vep_cache/homo_sapiens_vep_105_GRCh38.tar.gz"
-    
-
+    "genome": {
+        "filetype": "fasta",
+        "url": "https://ftp.ensembl.org/pub/release-105/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz" 
+    },
+    "transcriptome": {
+        "filetype": "fasta",
+        "url": "https://ftp.ensembl.org/pub/current/fasta/homo_sapiens/cdna/Homo_sapiens.GRCh38.cdna.all.fa.gz"
+    },
+    "gtf": {
+        "filetype": "gtf",
+        "url": "https://ftp.ensembl.org/pub/release-105/gtf/homo_sapiens/Homo_sapiens.GRCh38.105.gtf.gz" 
+    },
+    "vep_cache": {
+        "filetype": "archive",
+        "url": "https://ftp.ensembl.org/pub/release-105/variation/indexed_vep_cache/homo_sapiens_vep_105_GRCh38.tar.gz"
+    }
 }

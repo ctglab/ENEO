@@ -1,74 +1,18 @@
 # Setup resources
 
-ENEO heavily depends on public genetic databases for germline probability estimation. It's required to download data from multiple resources and convert them in order to have concordant annotations (i.e. Ensembl).
+ENEO heavily depends on public genetic databases for germline probability estimation plus other fairly common resources daily needed for bioinformatics. In order to make the download and configuration of resources for the workflow as smooth as possible, a python configuration script is available inside `setup/download_res.py`. As the workflow depends on Ensembl annotation, downloading resources is not enough, as they may need a chromosome naming conversion: thus some common used tools like `bcftools` are required. To run the automatic setup, first create a `conda` environment using the `setup_env.yml` file located inside the `setup` folder.
 
-## Automatic setup
-On working
-
-![](https://imgs.xkcd.com/comics/automation.png)
-
-## Manual setup
-
-To prepare input files, it's required to have an environment with these tools installed 
-
-- bedtools
-- bcftools
-- tabix
-- gatk4
-
-The easiest way is to create a single conda environment as 
-
-```
-conda create --name eneo_setup -c bioconda -c conda-forge bedtools bcftools tabix gatk4
+```sh
+conda env create -f setup_env.yml 
 ```
 
-
-### Genome and Transcriptome files
-
-Given the use of Ensembl annotation, files could be downloaded from the Ensembl ftp site
-
-**Genome**:
-```
-wget https://ftp.ensembl.org/pub/current/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz
-gatk CreateSequenceDictionary -R Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz -O Homo_sapiens.GRCh38.dna.primary_assembly.fa.dict
-```
-**Transcriptome**
-```
-wget https://ftp.ensembl.org/pub/current/fasta/homo_sapiens/cdna/Homo_sapiens.GRCh38.cdna.all.fa.gz
-```
-
-### Genetic population resources
-
-ENEO uses multiple databases to infer germline likelihood of candidate variants. Most of them uses different chromosome naming, so you need to convert them. A conversion table is available at
-
-#### dbSNP
+Then activate the conda environment, and launch the configuration script as follows, specifying the right `outfolder`.
 
 ```bash
-wget -c https://ftp.ncbi.nih.gov/snp/organisms/human_9606/VCF/All_20180418.vcf.gz
-wget -c https://ftp.ncbi.nih.gov/snp/organisms/human_9606/VCF/All_20180418.vcf.gz.tbi
+python3 download_res.py --config ../config/config_main.yaml --json resources.json --outfolder resources  
 ```
 
-#### 1000G
+## What if I already got some of them?
 
-```bash
-wget https://storage.googleapis.com/gcp-public-data--broad-references/hg38/v0/1000G_phase1.snps.high_confidence.hg38.vcf.gz
-wget https://storage.googleapis.com/gcp-public-data--broad-references/hg38/v0/1000G_phase1.snps.high_confidence.hg38.vcf.gz.tbi
-```
-#### known indels
-
-```bash
-wget https://storage.googleapis.com/gcp-public-data--broad-references/hg38/v0/Homo_sapiens_assembly38.known_indels.vcf.gz
-wget https://storage.googleapis.com/gcp-public-data--broad-references/hg38/v0/Homo_sapiens_assembly38.known_indels.vcf.gz.tbi
-```
-
-### gnomAD
-
-```bash
-wget https://storage.googleapis.com/gcp-public-data--broad-references/hg38/v0/somatic-hg38/af-only-gnomad.hg38.vcf.gz
-wget https://storage.googleapis.com/gcp-public-data--broad-references/hg38/v0/somatic-hg38/af-only-gnomad.hg38.vcf.gz.tbi
-```
-
-
-
-
-
+The configuration script works by controlling the existence of the files whose path is written inside the main configuration file `conf_main.yaml`, located in the `config` folder. If any of those files are already in your machine, just edit the configuration file adding the right *absolute* path. The script will check for its presence without re-downloading it.  
+⚠️**NOTE**⚠️: As stated before, the annotation for all the files is the one provided by the Ensembl consortium. Files like the `dbSNPs` are often available with different chromosome naming: include them manually only if you're sure that the naming is right.   

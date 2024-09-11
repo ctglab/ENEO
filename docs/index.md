@@ -17,4 +17,4 @@ To execute the pipeline, be sure to have [snakemake](https://snakemake.readthedo
 snakemake --use-singularity --use-conda --cores 4
 ```
 
-If you spot any issue, please report in the github issue section https://github.com/ctglab/ENEO/issues
+If you spot any issue, please report in the [github issue section](https://github.com/ctglab/ENEO/issues)

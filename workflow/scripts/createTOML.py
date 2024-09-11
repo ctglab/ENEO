@@ -31,8 +31,6 @@ def main(yaml_file, template_file, output_file):
             field['file'] = conf_main['resources']['dbsnps']
         elif "REDI" in field['names'][0]:
             field['file'] = conf_main['resources']['REDI']
-        elif "exAC" in field['names'][0]:
-            field['file'] = conf_main['resources']['small_exac']
         elif "indel" in field['names'][0]:
             field['file'] = conf_main['resources']['indel']
         elif "cosmic" in field['names'][0]:

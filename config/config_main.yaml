@@ -1,5 +1,4 @@
 OUTPUT_FOLDER: ENEO_output/
-REDI: /home/danilo/ENEO/setup/TABLE1_hg38._converted.BED.gz
 TEMP_DIR: temp_gatk
 datadirs:
   BQSR: BQSR
@@ -95,22 +94,22 @@ params:
         Wildtype: workflow/utils/vep_plugins/Wildtype.pm
     threads: null
 resources:
-  REDI: /home/danilo/ENEO/setup/TABLE1_hg38._converted.BED.gz
   cosmic: test_data/cosmic_chr6.vcf.gz
-  dbsnps: test_data/dbsnpALFA_chr6_filt.vcf.gz
-  genome: /home/danilo/ENEO/setup/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz
+  dbsnps: null
+  genome: null
   germline_prob_script: workflow/scripts/germProb.py
-  giab_intervals: test_data/GIAB_chr6.bed.gz
-  gnomad: test_data/gnomad_chr6.vcf.gz
-  gsnps: /home/danilo/ENEO/setup/1000G_phase1.snps.high_confidence.hg38_converted.vcf.gz
-  gtf: /home/danilo/ENEO/setup/Homo_sapiens.GRCh38.105.gtf.gz
+  giab_intervals: workflow/supplementary_res/GRCh38_giab_merged.bed.gz
+  gnomad: null
+  gsnps: null
+  gtf: null
   hla_script: workflow/scripts/HLA_typing.py
-  indel: test_data/indels_chr6.vcf.gz
-  intervals_coding: test_data/exons_target.BED.gz
-  small_exac: test_data/exac_chr6.vcf.gz
+  indel: null
+  intervals_coding: workflow/supplementary_res/intervals_coding.BED.gz
+  REDI: null
   t1k_file: workflow/supplementary_res/hlaidx_rna_seq.fa
   toml_script: workflow/scripts/createTOML.py
-  transcriptome: test_data/chr6_cdna.fa.gz
+  transcriptome: null
+  vep_cache: null
   vcfanno_binary: workflow/utils/vcfanno_linux64
   vcfanno_lua: workflow/utils/custom.lua
   vcfanno_toml: workflow/utils/vcfanno.toml

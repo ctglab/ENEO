@@ -13,7 +13,7 @@ rule annotate_variants:
         + "{patient}_annot_germProb.vcf.gz.tbi",
         plugin_wt=config["params"]["vep"]["extra"]["plugins"]["Wildtype"],
         plugin_fs=config["params"]["vep"]["extra"]["plugins"]["Frameshift"],
-        #cache=config["resources"]["vep_cache_dir"],
+        cache=config["resources"]["vep_cache_dir"],
         #plugins=config["resources"]["vep_plugin_dir"],
     output:
         vcfout=temp(config["OUTPUT_FOLDER"]
@@ -44,10 +44,9 @@ rule annotate_variants:
         --plugin Frameshift --plugin Wildtype \
         --dir_plugins {params.plugin_dir} \
         --force_overwrite \
-        --assembly {params.assembly} --database
+        --assembly {params.assembly} \
+        --offline --cache --dir_cache {input.cache} 
         """
-        # --assembly {params.assembly} --offline --cache --dir_cache {input.cache} \
-        # --dir_plugins {input.plugins}
 
 rule compress_annotated_vcf:
     input:

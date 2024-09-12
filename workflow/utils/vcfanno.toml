@@ -18,12 +18,6 @@ ops=['self']
 
 [[annotation]]
 file=""
-fields=["AF"]
-names=["exAC_AF"]
-ops=["self"]
-
-[[annotation]]
-file=""
 fields=["AN","AC","AF"]
 names=["indels_AN", "indels_AC", "indels_AF"]
 ops=["self", "self", "self"]

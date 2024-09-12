@@ -1,143 +1,116 @@
-# Adjust parameter for custom analysis
-
-# -- Temp directory for gatk -- #
-TEMP_DIR: "temp_gatk"
-slurm_log_dir: slurm-logs
-
-# -- Base paths -- #
-
-OUTPUT_FOLDER : "ENEO_output/"
-
-# -- Relative paths to concatenate -- #
-# -- OUTPUT STRUCTURE -- #
+OUTPUT_FOLDER: ENEO_output/
+TEMP_DIR: temp_gatk
 datadirs:
-  index_folder: "genome_index"
-  salmon_idx: "salmon_index"
-  trimmed_reads: "trimmed_reads"
-  trimming_report: "fastp_report"
-  mapped_reads:  "mapped_reads"
-  salmon_quant: "quantification"
-  expression: "expression_data"
-  bams: "bams"
-  utils: "utils"
-  HLA_typing: "HLA_typing"
-  BQSR:  "BQSR"
-  VCF:  "VCF"
-  VCF_germ: "VCF_germ"
-  VCF_out: "VCF_out"  
-  peptides: "peptides"  
+  BQSR: BQSR
+  HLA_typing: HLA_typing
+  VCF: VCF
+  VCF_germ: VCF_germ
+  VCF_out: VCF_out
+  bams: bams
+  expression: expression_data
+  index_folder: genome_index
   logs:
-    align: "log/align"
-    annotate_variants: "log/annotate_variants"
-    bam_cleaning: "log/bam_cleaning"
-    bam_readcount: "log/bam_readcount"
-    base_recalibration: "log/base_recalibration"
-    decompose: "log/decompose"
-    export_quant: "log/export_quant"
-    intervals: "log/intervals"
-    pMHC: "log/pMHC"
-    salmon_quant: "log/salmon_quant"
-    snv_calling: "log/snv_calling"
-    sort_bam: "log/sort_bam"
-    star_idx:  "log/star_idx"
-    t1k: "log/t1k"
-    trimming: "log/trimming"
-
-
-
-
-# -- RESOURCES -- #
-# Despite the possibility to put all of them inside a single folder, the choice to write them down 
-# explicitely is intentional. That's because a bioinformatic research group could already have many 
-# of these files on their server in different locations, so it's useless to move them in a single 
-# folder breaking existing practices e/o workflows.
-
-resources:
-  # -- references -- #
-  genome: "test_data/genome_chr6.fa.gz"
-  transcriptome: "test_data/chr6_cdna.fa.gz"
-  gtf: "test_data/chr6_105.gtf"
-  # -- vcfs -- #
-  gnomad: "test_data/gnomad_chr6.vcf.gz"
-  gsnps: "test_data/1000G_snsp_chr6.vcf.gz"
-  dbsnps: "test_data/dbsnpALFA_chr6.vcf.gz"
-  REDI: "test_data/REDI_chr6.BED.gz"
-  small_exac: "test_data/exac_chr6.vcf.gz"
-  indel: "test_data/indels_chr6.vcf.gz"
-  cosmic: "test_data/cosmic_chr6.vcf.gz"
-  # -- other -- #
-  # NOTE: for the sake of github testing, we're not using vep cache and vep plugin, referring
-  # only to online for annotation. This doesn't scale at the whole VCF size, requiring the 
-  # local copy of the vep cache. Refer to the documentation for the full setup
-  hla_script: "workflow/scripts/HLA_typing.py"
-  germline_prob_script: "workflow/scripts/germProb.py"
-  toml_script: "workflow/scripts/createTOML.py"
-  intervals_coding: "workflow/supplementary_res/intervals_coding.BED.gz"
-  vcfanno_binary: "workflow/utils/vcfanno_linux64"
-  vcfanno_toml: "workflow/utils/vcfanno.toml"
-  vcfanno_lua: "workflow/utils/custom.lua"
-  t1k_file: "workflow/supplementary_res/hlaidx_rna_seq.fa"
-  giab_intervals: "test_data/GIAB_chr6.bed.gz"
-# -- TOOLS PARAMS -- #
-# moved from a tool centered to a resource type one 
+    align: log/align
+    annotate_variants: log/annotate_variants
+    bam_cleaning: log/bam_cleaning
+    bam_readcount: log/bam_readcount
+    base_recalibration: log/base_recalibration
+    decompose: log/decompose
+    export_quant: log/export_quant
+    intervals: log/intervals
+    pMHC: log/pMHC
+    salmon_quant: log/salmon_quant
+    snv_calling: log/snv_calling
+    sort_bam: log/sort_bam
+    star_idx: log/star_idx
+    t1k: log/t1k
+    trimming: log/trimming
+  mapped_reads: mapped_reads
+  peptides: peptides
+  salmon_idx: salmon_index
+  salmon_quant: quantification
+  trimmed_reads: trimmed_reads
+  trimming_report: fastp_report
+  utils: utils
 params:
-  STAR:
-    threads: 12
-    RAM: 
-    extra: "--twopassMode Basic --outSAMtype BAM Unsorted --readFilesCommand zcat " 
-  t1k:
-    threads: 8
-    RAM: 
-    extra: 
-  salmon:
-    threads: 8
-    RAM: 
-    extra:
-      index: "--keep-duplicates"
-      libtype: "A"
-      zip_ext: "gz"
-      extra: "--gcBias --seqBias --reduceGCMemory"
-  samtools:
-    threads: 4
-    RAM: 
-    extra: ""
-  MarkDuplicates:
-    threads: 4
-    RAM: 30000
-    extra: ""
-  SplitNCigarReads:
-    threads: 4
-    RAM: 30000
-    extra: ""
   BQSR:
-    threads: 4
     RAM: 30000
-    extra: ""
+    extra: ''
+    threads: 4
+  MarkDuplicates:
+    RAM: 30000
+    extra: ''
+    threads: 4
+  STAR:
+    RAM: null
+    extra: '--twopassMode Basic --outSAMtype BAM Unsorted --readFilesCommand zcat '
+    threads: 12
+  SplitNCigarReads:
+    RAM: 30000
+    extra: ''
+    threads: 4
   gatk:
-    RAM: 20  
+    RAM: 20
     extra:
       RGPU: unit1
       RGSM: 20
-  strelka2:
-    threads: 8
-    RAM: 
-    extra:
-  vcfanno:
-    threads: 8
-    RAM: 
-    extra:
-  pvacseq:
-    threads: 2
-    RAM: 
-    extra:
-  vep:
-    threads: 
-    RAM: 
-    extra:
-      assembly: "GRCh38"
-      filtering: "--gencode_basic --coding_only --no_intergenic"
-      plugins:
-        Wildtype: workflow/utils/vep_plugins/Wildtype.pm
-        Frameshift: workflow/utils/vep_plugins/Frameshift.pm
   pMHC:
     threads: 4
+  pvacseq:
+    RAM: null
+    extra: null
+    threads: 2
+  salmon:
+    RAM: null
+    extra:
+      extra: --gcBias --seqBias --reduceGCMemory
+      index: --keep-duplicates
+      libtype: A
+      zip_ext: gz
+    threads: 8
+  samtools:
+    RAM: null
+    extra: ''
+    threads: 4
+  strelka2:
+    RAM: null
+    extra: null
+    threads: 8
+  t1k:
+    RAM: null
+    extra: null
+    threads: 8
+  vcfanno:
+    RAM: null
+    extra: null
+    threads: 8
+  vep:
+    RAM: null
+    extra:
+      assembly: GRCh38
+      filtering: --gencode_basic --coding_only --no_intergenic
+      plugins:
+        Frameshift: workflow/utils/vep_plugins/Frameshift.pm
+        Wildtype: workflow/utils/vep_plugins/Wildtype.pm
+    threads: null
+resources:
+  cosmic: test_data/cosmic_chr6.vcf.gz
+  dbsnps: null
+  genome: null
+  germline_prob_script: workflow/scripts/germProb.py
+  giab_intervals: workflow/supplementary_res/GRCh38_giab_merged.bed.gz
+  gnomad: null
+  gsnps: null
+  gtf: null
+  hla_script: workflow/scripts/HLA_typing.py
+  indel: null
+  intervals_coding: workflow/supplementary_res/intervals_coding.BED.gz
+  REDI: null
+  t1k_file: workflow/supplementary_res/hlaidx_rna_seq.fa
+  toml_script: workflow/scripts/createTOML.py
+  transcriptome: null
+  vep_cache: null
+  vcfanno_binary: workflow/utils/vcfanno_linux64
+  vcfanno_lua: workflow/utils/custom.lua
+  vcfanno_toml: workflow/utils/vcfanno.toml
+slurm_log_dir: slurm-logs

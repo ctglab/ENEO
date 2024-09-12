@@ -13,7 +13,7 @@ rule annotate_variants:
         + "{patient}_annot_germProb.vcf.gz.tbi",
         plugin_wt=config["params"]["vep"]["extra"]["plugins"]["Wildtype"],
         plugin_fs=config["params"]["vep"]["extra"]["plugins"]["Frameshift"],
-        cache=config["resources"]["vep_cache_dir"],
+        cache=config["resources"]["vep_cache"],
         #plugins=config["resources"]["vep_plugin_dir"],
     output:
         vcfout=temp(config["OUTPUT_FOLDER"]

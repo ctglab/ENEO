@@ -1,0 +1,35 @@
+# This is a slightly reduced Snakefile intended to be used for Github CI
+# where the creation of the Docker container to be used for VEP and 
+# pMHC prediction is not going to be working because of Actions policy. 
+
+
+import glob
+import os
+import pandas as pd
+import sys
+from collections import Counter
+
+
+configfile: "config/config.yaml"
+
+include: "common.smk"
+
+
+rule targets:
+    input:
+        expand(
+            config["OUTPUT_FOLDER"]
+            + config["datadirs"]["VCF_out"]
+            + "/"
+            + "{patient}_annot_germProb.vcf.gz.tbi",
+            patient=patients,
+        ),
+
+include: "../workflow/rules/index.smk"
+include: "../workflow/rules/alignment.smk"
+include: "../workflow/rules/quantification.smk"
+include: "../workflow/rules/bam_cleaning.smk"
+include: "../workflow/rules/base_recalibration.smk"
+include: "../workflow/rules/HLA_typing.smk"
+include: "../workflow/rules/strelka.smk"
+include: "../workflow/rules/filter_calls.smk"

@@ -1,3 +1,4 @@
+# This is a config file intended to be used just for CI testing
 OUTPUT_FOLDER: ENEO_output/
 TEMP_DIR: temp_gatk
 datadirs:
@@ -90,27 +91,26 @@ params:
       assembly: GRCh38
       filtering: --gencode_basic --coding_only --no_intergenic
       plugins:
-        Frameshift: workflow/utils/vep_plugins/Frameshift.pm
-        Wildtype: workflow/utils/vep_plugins/Wildtype.pm
+        Frameshift: ../workflow/utils/vep_plugins/Frameshift.pm
+        Wildtype: ../workflow/utils/vep_plugins/Wildtype.pm
     threads: null
 resources:
   cosmic: test_data/cosmic_chr6.vcf.gz
-  dbsnps: freq.vcf.gz
-  genome: Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz
-  germline_prob_script: workflow/scripts/germProb.py
-  giab_intervals: workflow/supplementary_res/GRCh38_giab_merged.bed.gz
-  gnomad: af-only-gnomad.hg38.vcf.gz
-  gsnps: 1000G_phase1.snps.high_confidence.hg38.vcf.gz
-  gtf: Homo_sapiens.GRCh38.105.gtf.gz
-  hla_script: workflow/scripts/HLA_typing.py
-  indel: Homo_sapiens_assembly38.known_indels.vcf.gz
-  intervals_coding: workflow/supplementary_res/intervals_coding.BED.gz
-  REDI: TABLE1_hg38.txt.gz
-  t1k_file: workflow/supplementary_res/hlaidx_rna_seq.fa
-  toml_script: workflow/scripts/createTOML.py
-  transcriptome: Homo_sapiens.GRCh38.cdna.all.fa.gz
-  vep_cache: homo_sapiens_vep_105_GRCh38.tar.gz
-  vcfanno_binary: workflow/utils/vcfanno_linux64
-  vcfanno_lua: workflow/utils/custom.lua
-  vcfanno_toml: workflow/utils/vcfanno.toml
+  dbsnps: "test_data/dbsnpALFA_chr6.vcf.gz"
+  genome: "test_data/genome_chr6.fa.gz"
+  germline_prob_script: ../workflow/scripts/germProb.py
+  giab_intervals: ../workflow/supplementary_res/GRCh38_giab_merged.bed.gz
+  gnomad: "test_data/gnomad_chr6.vcf.gz"
+  gsnps: "test_data/1000G_snsp_chr6.vcf.gz"
+  gtf: "test_data/chr6_105.gtf"
+  hla_script: ../workflow/scripts/HLA_typing.py
+  indel: "test_data/indels_chr6.vcf.gz"
+  intervals_coding: ../workflow/supplementary_res/intervals_coding.BED.gz
+  REDI: "test_data/REDI_chr6.BED.gz"
+  t1k_file: ../workflow/supplementary_res/hlaidx_rna_seq.fa
+  toml_script: ../workflow/scripts/createTOML.py
+  transcriptome: "test_data/chr6_cdna.fa.gz"
+  vcfanno_binary: ../workflow/utils/vcfanno_linux64
+  vcfanno_lua: ../workflow/utils/custom.lua
+  vcfanno_toml: ../workflow/utils/vcfanno.toml
 slurm_log_dir: slurm-logs

@@ -11,10 +11,22 @@ jobs:
   Testing:
     runs-on: ubuntu-latest
     steps:
-    - name: Testing workflow
-      uses: snakemake/snakemake-github-action@v1.22.0
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
       with:
-        directory: .test
-        snakefile: .test/Snakefile
-        args: "--use-conda --use-singularity --show-failed-logs --cores 4 --conda-cleanup-pkgs cache"
+        python-version: 3.8
+    - name: Add conda to system path
+      run: |
+        # $CONDA is an environment variable pointing to the root of the miniconda directory
+        echo $CONDA/bin >> $GITHUB_PATH
+    - name: Install dependencies
+      run: |
+        conda install -c conda-forge mamba
+    - name: Setup snakemake
+      run: |
+        mamba install -c conda-forge -c bioconda snakemake singularity
+    - name: Test workflow
+      run: |
+        cd .test ; snakemake -s Snakefile --use-conda --use-singularity --cores 4
     

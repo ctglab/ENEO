@@ -12,3 +12,4 @@ ENEO_output/
 genome_index/
 temp_gatk/
 *pycache*
+test_res/

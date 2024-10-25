@@ -12,8 +12,8 @@ Then activate the conda environment, and launch the configuration script as foll
 python3 download_res.py ../config/config_main.yaml resources.json resources  
 ```
 
->[!NOTE]
-> The genome assembly in use is the GRCh38. 
+!!! note
+    The genome assembly in use is the GRCh38. We're not planning to backport it to older assembly. 
 
 
 This script will download different resources:
@@ -27,7 +27,7 @@ This script will download different resources:
 
 The configuration script works by controlling the existence of the files whose path is written inside the main configuration file `conf_main.yaml`, located in the `config` folder. If any of those files are already in your machine, just edit the configuration file adding the right *absolute* path. The script will check for its presence without re-downloading it.
 
->[!CAUTION]
-> The annotation for files must be concordant throughout the pipeline, to avoid any error. Be sure to add resources manually only if you're sure of their concordance.
+!!! warning
+    The annotation for files must be concordant throughout the pipeline, to avoid any error. Be sure to add resources manually only if you're sure of their concordance.
 
 

@@ -29,8 +29,8 @@ snakemake --profile workflow/profile/slurm_profile
 
 ## SGE
 
->[!CAUTION]
-> The support for SGE is still experimental. If you spot any issue, report it in the Github section
+!!! warning
+  The support for SGE is still experimental. If you spot any issue, report it in the Github section
 
 A config file for SGE is under `workflow/profile/sge_profile/config.yaml`. The overall scheme is the following
 

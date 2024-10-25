@@ -1,0 +1,21 @@
+cluster:
+  mkdir -p sge-logs/{rule} &&
+  qsub
+    -pe smp {resources.ncpus}
+    -l mem_free={resources.mem}
+    -l h_rt={resources.time}
+    -N smk-{rule}-{wildcards}
+    -o sge-logs/{rule}/{rule}-{wildcards}-$JOB_ID.out
+    -e sge-logs/{rule}/{rule}-{wildcards}-$JOB_ID.err
+    -q all.q
+default-resources:
+  - mem="8G"
+  - time="01:30:00"
+  - ntasks=1
+local-cores: 1
+latency-wait: 60
+jobs: 500
+keep-going: True
+rerun-incomplete: True
+printshellcmds: True
+scheduler: greedy

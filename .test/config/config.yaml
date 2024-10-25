@@ -105,7 +105,7 @@ resources:
   gtf: "test_data/chr6_105.gtf"
   hla_script: ../workflow/scripts/HLA_typing.py
   indel: "test_data/indels_chr6.vcf.gz"
-  intervals_coding: ../workflow/supplementary_res/intervals_coding.BED.gz
+  intervals_coding: test_data/exons_target.BED.gz
   REDI: "test_data/REDI_chr6.BED.gz"
   t1k_file: ../workflow/supplementary_res/hlaidx_rna_seq.fa
   toml_script: ../workflow/scripts/createTOML.py

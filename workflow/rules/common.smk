@@ -8,15 +8,23 @@ min_version("5.9.1")
 
 configfile: "config/config_main.yaml"
 
+# Set execution mode
+if config["execution_mode"].lower() == "reduced":
+    execution_mode = "reduced"
+    print(f"The pipeline will be executed in the {execution_mode} mode")
+elif config["execution_mode"].lower() == "full":
+    execution_mode = "full"
+    print(f"The pipeline will be executed in the {execution_mode} mode")
+else:
+    raise ValueError(f"The parameter {filetype} must be one of 'bam' or 'fastq'.")
 
 # Load patient info.
 # Note that this dataframe is accessed every time to determine the wildcards used
 # at each step of the analysis while needed.
 
 configpath = "config/config_main.yaml"
-
 patients = pd.read_csv("patients.csv")["patient"]
-units = pd.read_csv("units.csv").set_index(["patient"], drop=False)
+units = pd.read_csv("units_bam.csv").set_index(["patient"], drop=False)
 units = units.sort_index()
 
 slurm_logdir = config["slurm_log_dir"]
@@ -56,6 +64,9 @@ def sample_from_patient(df, patient_list, condition):
         )
     return samples
 
+def get_bam(wildcards):
+    return {'bam': units.loc[wildcards.patient, 'bam']}
+
 def get_fastq(wildcards):
     """Return a dict where keys are read1/2 and values are list of files"""
     return {
@@ -68,13 +79,6 @@ def memory_for_gatk(gatk_mem: int):
     """Quick workaround to return string parameter for gatk"""
     as_str = f'--java-options "-Xmx{gatk_mem}g"'
     return as_str
-
-
-def get_bam(wildcards):
-    """
-    Return list of bam files for rule bam_readcount
-    """
-    return [f"{bam_final_path}/{wildcards.patient}_recal.bam"]
 
 
 def get_intervals():

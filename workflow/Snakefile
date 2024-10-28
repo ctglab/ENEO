@@ -9,7 +9,6 @@ configfile: "config/config_main.yaml"
 
 include: "rules/common.smk"
 
-
 rule targets:
     input:
         expand(
@@ -27,13 +26,27 @@ rule targets:
             patient=patients,
         ),
 
-include: "rules/index.smk"
-include: "rules/alignment.smk"
-include: "rules/annotate_variants.smk"
-include: "rules/quantification.smk"
-include: "rules/bam_cleaning.smk"
-include: "rules/base_recalibration.smk"
-include: "rules/HLA_typing.smk"
-include: "rules/strelka.smk"
-include: "rules/filter_calls.smk"
-include: "rules/pMHC.smk"
+if execution_mode == 'reduced':
+    # this is a reduced version of the workflow.
+    include: "rules/bam_cleaning.smk"
+    include: "rules/base_recalibration.smk"
+    include: "rules/strelka.smk"
+    include: "rules/filter_calls.smk"
+    include: "rules/annotate_variants.smk"
+    include: "rules/HLA_typing.smk"
+    include: "rules/pMHC.smk"
+elif execution_mode == 'full':
+    include: "rules/index.smk"
+    include: "rules/alignment.smk"
+    include: "rules/annotate_variants.smk"
+    include: "rules/quantification.smk"
+    include: "rules/bam_cleaning.smk"
+    include: "rules/base_recalibration.smk"
+    include: "rules/HLA_typing.smk"
+    include: "rules/strelka.smk"
+    include: "rules/filter_calls.smk"
+    include: "rules/pMHC.smk"
+
+
+
+

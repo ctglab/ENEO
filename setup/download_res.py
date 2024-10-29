@@ -248,7 +248,19 @@ def update_yaml(conf_main: str, resources: str, outfolder: str):
                 # genome, transcriptome and gtf doesn't need conversions
                 if resource_entry.res_type in ["fasta", "gtf"]:
                     resource_entry._download_stuff()
-                elif resource_entry.main_filename == "dbsnps":
+                    # if it's a genome, do also the dictionary
+                    if "genome" in resource_entry.main_filename:
+                        outfile = os.path.join(outfolder, resource_entry.main_filename.replace('.fa.gz', '.dict'))
+                        subprocess.run(
+                            [
+                                'gatk',
+                                'CreateSequenceDictionary',
+                                '-R',
+                                os.path.join(outfolder, resource_entry.main_filename),
+                                '-O',
+                                outfile
+                            ])
+                elif resource_entry.res_name == "dbsnps":
                     # for dbsnps we need to do conversion and then annotation for allele frequency
                     refseq_conv_table = os.path.join(
                         os.path.dirname(cwd), "refseq_dbsnp.tsv"
@@ -285,13 +297,18 @@ def update_yaml(conf_main: str, resources: str, outfolder: str):
                             os.path.abspath(outfolder)
                         ]
                     )
-                    resource_entry.main_filename = resource_entry.main_filename.replace(
-                        ".tar.gz", ""
+                    resource_entry.main_filename = os.path.join(
+                        outfolder, 'homo_sapiens'
                     )
+                else:
+                    # this is for all the other VCF that doesn't need 
+                    # to be converted at all
+                    resource_entry._download_stuff()
                 # update entry accordingly
                 conf_main_yaml["resources"][res_name] = os.path.join(
                     os.path.abspath(outfolder), resource_entry.main_filename
                 )
+
 
     # that's good, now we could write out the YAML
     with open(conf_main, "w") as conf_main:

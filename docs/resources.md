@@ -9,7 +9,7 @@ conda env create -f setup_env.yml
 Then activate the conda environment, and launch the configuration script as follows, replacing the `resources` folder with .
 
 ```bash
-python3 download_res.py ../config/config_main.yaml resources.json resources  
+python3 download_res.py -c ../config/config_main.yaml -r resources.json -o resources  
 ```
 
 !!! note

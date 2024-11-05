@@ -12,9 +12,17 @@ import sys
 import json
 import subprocess
 import cyvcf2
+import argparse
+
 
 cwd = os.path.abspath(__file__)
 
+def parse_arguments():
+    parser = argparse.ArgumentParser(description="Downloader script using Gencode notation.")
+    parser.add_argument('-c', '--config', type=str, required=True, help='Path to the configuration file.')
+    parser.add_argument('-r', '--resources', type=str, required=True, help='Path to the resources directory.')
+    parser.add_argument('-o', '--outfolder', type=str, required=True, help='Path to the output folder.')
+    return parser.parse_args()
 
 class ChromosomeConverter(object):
     """
@@ -70,7 +78,8 @@ class ChromosomeConverter(object):
                 f"{chr_from} must be a choice between {', '.join(['ensembl', 'assembly', 'genbank', 'refseq'])}"
             )
         if outfile is None:
-            outfile = os.path.join(os.path.dirname(cwd), f"{chr_from}_to_gencode.tsv")
+            outfile = os.path.join(os.path.dirname(
+                cwd), f"{chr_from}_to_gencode.tsv")
         subset = self.conv_table.loc[
             self.conv_table["source_type"].str.contains(chr_from.lower())
         ]
@@ -136,7 +145,8 @@ class ResourceEntry(object):
             filetype = self.resources_entry["filetype"]
             return filetype
         except KeyError:
-            print(f"Malformed entry for {self.res_name}. Check the resource file")
+            print(
+                f"Malformed entry for {self.res_name}. Check the resource file")
 
     def _is_downloaded(self):
         if os.path.isfile(os.path.join(self.outfolder, self.main_filename)):
@@ -177,7 +187,8 @@ class ResourceEntry(object):
                 AF = 0
             return AN, AC, AF
 
-        vcf = cyvcf2.VCF(os.path.join(self.outfolder, self.main_filename), threads=4)
+        vcf = cyvcf2.VCF(os.path.join(
+            self.outfolder, self.main_filename), threads=4)
         vcf.add_info_to_header(
             {
                 "ID": "AN",
@@ -204,7 +215,8 @@ class ResourceEntry(object):
         )
         # open the writer
         fpath = os.path.join(
-            self.outfolder, self.main_filename.replace(".gz", "_withAF.gz")
+            self.outfolder, self.main_filename.replace(
+                ".vcf.gz", "_withAF.vcf.gz")
         )
         w = cyvcf2.Writer(fpath, vcf, mode="wz")
         for variant in vcf:
@@ -233,50 +245,55 @@ def update_yaml(conf_main: str, resources: str, outfolder: str):
     print(resources)
     for res_name in conf_main_yaml["resources"]:
         # first ensure that the file is not present.
-        if not os.path.isfile(conf_main_yaml["resources"][res_name]):
-            if not res_name in resources.keys():
-                print(f"Unable to find the URL for {res_name}")
-                continue
-            else:
-                # download regularly
-                resource_entry = ResourceEntry(
+        if res_name not in resources.keys():
+            print(f"Unable to find the URL for {res_name}")
+            continue
+        else:
+            resource_entry = ResourceEntry(
                     conf_file=conf_main_yaml,
                     resources_entry=resources[res_name],
                     res_name=res_name,
                     outfolder=outfolder,
-                )
-                # genome, transcriptome and gtf doesn't need conversions
+            )
+            if resource_entry.downloaded:
+                print(f"{resource_entry.res_name} is already present.")
+            else:
                 if resource_entry.res_type in ["fasta", "gtf"]:
                     resource_entry._download_stuff()
-                    # if it's a genome, do also the dictionary
-                    if "genome" in resource_entry.main_filename:
-                        outfile = os.path.join(outfolder, resource_entry.main_filename.replace('.fa.gz', '.dict'))
-                        subprocess.run(
-                            [
-                                'gatk',
-                                'CreateSequenceDictionary',
-                                '-R',
-                                os.path.join(outfolder, resource_entry.main_filename),
-                                '-O',
-                                outfile
-                            ])
+                    if 'genome' in resource_entry.main_filename:
+                        # do the dictionary
+                        dict_outfile = os.path.join(
+                            outfolder, resource_entry.main_filename.replace('.fa.gz', '.dict')
+                        )
+
+                        subprocess.run([
+                            "gatk",
+                            "CreateSequenceDictionary",
+                            "-R",
+                            os.path.join(
+                                outfolder, resource_entry.main_filename
+                            ),
+                            "-O",
+                            dict_outfile
+                        ])
                 elif resource_entry.res_name == "dbsnps":
-                    # for dbsnps we need to do conversion and then annotation for allele frequency
                     refseq_conv_table = os.path.join(
-                        os.path.dirname(cwd), "refseq_dbsnp.tsv"
-                    )
-                    chr_converter.generate_conv_file("refseq", refseq_conv_table)
+                            os.path.dirname(cwd), "refseq_dbsnp.tsv"
+                        )
+                    chr_converter.generate_conv_file(
+                            "refseq", refseq_conv_table
+                        )
                     cmd1 = f"bcftools annotate --rename-chrs {refseq_conv_table} {resource_entry.resources_entry['url']} | bgzip -c > {os.path.join(outfolder, resource_entry.main_filename)}"
                     subprocess.run([cmd1], shell=True)
                     subprocess.run(
-                        [
-                            "tabix",
-                            "-p",
-                            "vcf",
-                            os.path.join(outfolder, resource_entry.main_filename),
-                        ]
-                    )
-                    # now we need to add the allele frequency
+                            [
+                                "tabix",
+                                "-p",
+                                "vcf",
+                                os.path.join(
+                                    outfolder, resource_entry.main_filename),
+                            ]
+                        )
                     resource_entry.generate_allele_frequency()
                 elif resource_entry.res_type == "table":
                     # that's the stuff we need to do for the REDI portal file
@@ -292,23 +309,21 @@ def update_yaml(conf_main: str, resources: str, outfolder: str):
                         [
                             "tar",
                             "-xzvf",
-                            os.path.join(outfolder, resource_entry.main_filename),
+                            os.path.join(
+                                outfolder, resource_entry.main_filename),
                             "-C",
                             os.path.abspath(outfolder)
                         ]
                     )
-                    resource_entry.main_filename = os.path.join(
-                        outfolder, 'homo_sapiens'
-                    )
+                    resource_entry.main_filename = 'homo-sapiens'
                 else:
-                    # this is for all the other VCF that doesn't need 
+                    # this is for all the other VCF that doesn't need
                     # to be converted at all
                     resource_entry._download_stuff()
                 # update entry accordingly
                 conf_main_yaml["resources"][res_name] = os.path.join(
                     os.path.abspath(outfolder), resource_entry.main_filename
-                )
-
+                ) 
 
     # that's good, now we could write out the YAML
     with open(conf_main, "w") as conf_main:
@@ -317,5 +332,8 @@ def update_yaml(conf_main: str, resources: str, outfolder: str):
 
 if __name__ == "__main__":
     chr_converter = ChromosomeConverter()
+    args = parse_arguments()
     # generate table
-    update_yaml(conf_main=sys.argv[1], resources=sys.argv[2], outfolder=sys.argv[3])
+    update_yaml(conf_main=args.config,
+                resources=args.resources,
+                outfolder=args.outfolder)

@@ -322,7 +322,7 @@ def update_yaml(conf_main: str, resources: str, outfolder: str):
                     resource_entry._download_stuff()
                 # update entry accordingly
                 conf_main_yaml["resources"][res_name] = os.path.join(
-                    os.path.abspath(outfolder), resource_entry.main_filename
+                    outfolder, resource_entry.main_filename
                 ) 
 
     # that's good, now we could write out the YAML

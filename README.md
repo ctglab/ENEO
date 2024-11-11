@@ -1,6 +1,6 @@
 # ENEO
 
-[![Snakemake](https://img.shields.io/badge/snakemake-≥6.1.0-brightgreen.svg)](https://snakemake.github.io)
+[![Snakemake](https://img.shields.io/badge/snakemake-≤8.0.0-brightgreen.svg)](https://snakemake.github.io)
 [![Linting](https://github.com/ctglab/ENEO/actions/workflows/formatting.yml/badge.svg?branch=main)](https://github.com/ctglab/ENEO/actions/workflows/formatting.yml)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
 

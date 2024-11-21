@@ -22,7 +22,7 @@ rule targets:
             config["OUTPUT_FOLDER"]
             + config["datadirs"]["peptides"]
             + "/"
-            + "{patient}.epitopes.csv",
+            + "{patient}.filtered_epitopes.csv",
             patient=patients,
         ),
 

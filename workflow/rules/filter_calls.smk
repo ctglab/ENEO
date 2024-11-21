@@ -28,9 +28,9 @@ rule vcfanno:
             + "{patient}_annot.vcf.gz.tbi"
         ),
     params:
-        vcfanno_binary=config["resources"]["vcfanno_binary"],
+        vcfanno_binary=config["params"]["vcfanno"]["vcfanno_binary"],
         extra="--permissive-overlap",
-        lua=config["resources"]["vcfanno_lua"],
+        lua=config["params"]["vcfanno"]["vcfanno_lua"],
     threads: config["params"]["vcfanno"]["threads"]
     log:
         config["OUTPUT_FOLDER"]
@@ -95,8 +95,8 @@ rule filtercalls:
 rule createTOML:
     input:
         config_main=configpath,
-        toml_template=config["resources"]["vcfanno_toml"],
-        toml_script=config["resources"]["toml_script"],
+        toml_template=config["params"]["vcfanno"]["vcfanno_toml"],
+        toml_script=config["params"]["vcfanno"]["toml_script"],
     output:
         toml_file=config["OUTPUT_FOLDER"] + "vcfanno.toml",
     conda:

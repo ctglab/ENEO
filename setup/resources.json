@@ -3,7 +3,7 @@
         "filetype": "VCF",
         "url": "https://storage.googleapis.com/genomics-public-data/resources/broad/hg38/v0/1000G_phase1.snps.high_confidence.hg38.vcf.gz"
     },
-    "indels": {
+    "indel": {
         "filetype": "VCF",
         "url": "https://storage.googleapis.com/genomics-public-data/resources/broad/hg38/v0/Homo_sapiens_assembly38.known_indels.vcf.gz" 
     },

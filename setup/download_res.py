@@ -237,12 +237,11 @@ def update_yaml(conf_main: str, resources: str, outfolder: str):
     with open(conf_main, "r") as conf_main_yaml:
         conf_main_yaml = yaml.load(conf_main_yaml, Loader=yaml.FullLoader)
     resources = json.load(open(resources, "r"))
-    print(resources)
     for res_name in conf_main_yaml["resources"]:
         # first ensure that the file is not present.
         if not os.path.isfile(conf_main_yaml["resources"][res_name]):
             if not res_name in resources.keys():
-                print(f"Unable to find the URL for {res_name}")
+                print(f"Unable to find the URL for {res_name}. Download it manually like in the documentation")
                 continue
             else:
                 # download regularly
@@ -268,7 +267,7 @@ def update_yaml(conf_main: str, resources: str, outfolder: str):
                                 outfile
                             ])
                 elif resource_entry.res_name == "dbsnps":
-                    # for dbsnps we need to do conversion and then annotation for allele frequency
+                    # # for dbsnps we need to do conversion and then annotation for allele frequency
                     refseq_conv_table = os.path.join(
                         os.path.dirname(cwd), "refseq_dbsnp.tsv"
                     )
@@ -293,20 +292,21 @@ def update_yaml(conf_main: str, resources: str, outfolder: str):
                     )
                     resource_entry.main_filename = "REDI_portal.BED.gz"
                 elif resource_entry.res_type == "archive":
-                    # that's for VEP: download and extract
-                    resource_entry._download_stuff()
-                    subprocess.run(
-                        [
-                            "tar",
-                            "-xzvf",
-                            os.path.join(outfolder, resource_entry.main_filename),
-                            "-C",
-                            os.path.abspath(outfolder)
-                        ]
-                    )
-                    resource_entry.main_filename = os.path.join(
-                        outfolder, 'homo_sapiens'
-                    )
+                    if not os.path.isdir(conf_main_yaml["resources"][res_name]):
+                        # that's for VEP: download and extract
+                        resource_entry._download_stuff()
+                        subprocess.run(
+                            [
+                                "tar",
+                                "-xzvf",
+                                os.path.join(outfolder, resource_entry.main_filename),
+                                "-C",
+                                os.path.abspath(outfolder)
+                            ]
+                        )
+                        resource_entry.main_filename = os.path.join(
+                            os.path.abspath(outfolder), 'homo_sapiens'
+                        )
                 # update entry accordingly
                 conf_main_yaml["resources"][res_name] = os.path.join(
                     os.path.abspath(outfolder), resource_entry.main_filename

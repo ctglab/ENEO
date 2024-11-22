@@ -12,9 +12,16 @@ import sys
 import json
 import subprocess
 import cyvcf2
+import argparse
 
 cwd = os.path.abspath(__file__)
 
+def parse_arguments():
+    parser = argparse.ArgumentParser(description="Downloader script using Gencode notation.")
+    parser.add_argument('-c', '--config', type=str, required=True, help='Path to the configuration file.')
+    parser.add_argument('-r', '--resources', type=str, required=True, help='Path to the resources directory.')
+    parser.add_argument('-o', '--outfolder', type=str, required=True, help='Path to the output folder.')
+    return parser.parse_args()
 
 class ChromosomeConverter(object):
     """
@@ -312,5 +319,8 @@ def update_yaml(conf_main: str, resources: str, outfolder: str):
 
 if __name__ == "__main__":
     chr_converter = ChromosomeConverter()
+    args = parse_arguments()
     # generate table
-    update_yaml(conf_main=sys.argv[1], resources=sys.argv[2], outfolder=sys.argv[3])
+    update_yaml(conf_main=args.config,
+                resources=args.resources,
+                outfolder=args.outfolder)

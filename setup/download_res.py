@@ -14,7 +14,6 @@ import subprocess
 import cyvcf2
 import argparse
 
-
 cwd = os.path.abspath(__file__)
 
 def parse_arguments():
@@ -242,14 +241,15 @@ def update_yaml(conf_main: str, resources: str, outfolder: str):
     with open(conf_main, "r") as conf_main_yaml:
         conf_main_yaml = yaml.load(conf_main_yaml, Loader=yaml.FullLoader)
     resources = json.load(open(resources, "r"))
-    print(resources)
     for res_name in conf_main_yaml["resources"]:
         # first ensure that the file is not present.
-        if res_name not in resources.keys():
-            print(f"Unable to find the URL for {res_name}")
-            continue
-        else:
-            resource_entry = ResourceEntry(
+        if not os.path.isfile(conf_main_yaml["resources"][res_name]):
+            if not res_name in resources.keys():
+                print(f"Unable to find the URL for {res_name}. Download it manually like in the documentation")
+                continue
+            else:
+                # download regularly
+                resource_entry = ResourceEntry(
                     conf_file=conf_main_yaml,
                     resources_entry=resources[res_name],
                     res_name=res_name,
@@ -260,23 +260,20 @@ def update_yaml(conf_main: str, resources: str, outfolder: str):
             else:
                 if resource_entry.res_type in ["fasta", "gtf"]:
                     resource_entry._download_stuff()
-                    if 'genome' in resource_entry.main_filename:
-                        # do the dictionary
-                        dict_outfile = os.path.join(
-                            outfolder, resource_entry.main_filename.replace('.fa.gz', '.dict')
-                        )
-
-                        subprocess.run([
-                            "gatk",
-                            "CreateSequenceDictionary",
-                            "-R",
-                            os.path.join(
-                                outfolder, resource_entry.main_filename
-                            ),
-                            "-O",
-                            dict_outfile
-                        ])
+                    # if it's a genome, do also the dictionary
+                    if "genome" in resource_entry.main_filename:
+                        outfile = os.path.join(outfolder, resource_entry.main_filename.replace('.fa.gz', '.dict'))
+                        subprocess.run(
+                            [
+                                'gatk',
+                                'CreateSequenceDictionary',
+                                '-R',
+                                os.path.join(outfolder, resource_entry.main_filename),
+                                '-O',
+                                outfile
+                            ])
                 elif resource_entry.res_name == "dbsnps":
+                    # # for dbsnps we need to do conversion and then annotation for allele frequency
                     refseq_conv_table = os.path.join(
                             os.path.dirname(cwd), "refseq_dbsnp.tsv"
                         )
@@ -303,23 +300,21 @@ def update_yaml(conf_main: str, resources: str, outfolder: str):
                     )
                     resource_entry.main_filename = "REDI_portal.BED.gz"
                 elif resource_entry.res_type == "archive":
-                    # that's for VEP: download and extract
-                    resource_entry._download_stuff()
-                    subprocess.run(
-                        [
-                            "tar",
-                            "-xzvf",
-                            os.path.join(
-                                outfolder, resource_entry.main_filename),
-                            "-C",
-                            os.path.abspath(outfolder)
-                        ]
-                    )
-                    resource_entry.main_filename = 'homo-sapiens'
-                else:
-                    # this is for all the other VCF that doesn't need
-                    # to be converted at all
-                    resource_entry._download_stuff()
+                    if not os.path.isdir(conf_main_yaml["resources"][res_name]):
+                        # that's for VEP: download and extract
+                        resource_entry._download_stuff()
+                        subprocess.run(
+                            [
+                                "tar",
+                                "-xzvf",
+                                os.path.join(outfolder, resource_entry.main_filename),
+                                "-C",
+                                os.path.abspath(outfolder)
+                            ]
+                        )
+                        resource_entry.main_filename = os.path.join(
+                            os.path.abspath(outfolder), 'homo_sapiens'
+                        )
                 # update entry accordingly
                 conf_main_yaml["resources"][res_name] = os.path.join(
                     os.path.abspath(outfolder), resource_entry.main_filename

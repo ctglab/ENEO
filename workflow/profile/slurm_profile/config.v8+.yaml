@@ -1,0 +1,26 @@
+executor: cluster-generic
+cluster-generic-submit-cmd:
+  mkdir -p slurm-logs/{rule} &&
+  sbatch
+    --cpus-per-task={resources.ncpus}
+    --mem={resources.mem}
+    --time={resources.time}
+    --job-name=smk-{rule}-{wildcards}
+    --output=slurm-logs/{rule}/{rule}-{wildcards}-%j.out
+    --partition=boost_usr_prod
+    --account=IscrC_ENEO2_0
+default-resources:
+  - mem="8G"
+  - time="01:30:00"
+  - ntasks=1
+local-cores: 1
+latency-wait: 60
+jobs: 500
+keep-going: True
+rerun-incomplete: True
+printshellcmds: True
+scheduler: greedy
+use-conda: True
+use-singularity: True
+conda-frontend: conda
+singularity-args: '-B /leonardo_work/IscrC_ENEO2_0/ENEO_res -B /leonardo_scratch/large/userexternal/dtatoni0/ENEO/temp_gatk -B /leonardo_scratch/large/userexternal/dtatoni0/ENEO/ENEO_output -B /leonardo_scratch/large/userexternal/dtatoni0/ENEO/workflow --env TMPDIR=/leonardo_scratch/large/userexternal/dtatoni0/ENEO/temp_gatk'

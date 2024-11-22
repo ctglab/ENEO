@@ -32,7 +32,6 @@ rule BQSR_1:
         -R {input.fasta} \
         --known-sites  {input.GSNPs} \
         --known-sites  {input.indel}  \
-        --known-sites  {input.DbSNP} \
         -O {output.recall}
         """
 

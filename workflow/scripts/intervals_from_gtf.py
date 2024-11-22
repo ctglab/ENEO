@@ -21,17 +21,8 @@ class GTF_record(object):
         else:
             feat_dict = {}
             keyVal = attributes.split(';')[:-1]
-            for item in keyVal:
-                replItem = item.replace(' "', '="')
-                # populate the dict
-                try:
-                    k,v = replItem.split('=')
-                    rk = k.replace(' ','')
-                    vk = v.replace('"','')
-                    feat_dict[rk] = vk
-                except ValueError:
-                    print(f"Unable to parse this attribute field\n{attributes}")
-                    exit()
+            keyVal = [x.lstrip().replace('"', '').replace(' ', '=') for x in keyVal]
+            feat_dict = {k:v for k,v in [item.split('=') for item in keyVal]} 
             return feat_dict
         
     @staticmethod
@@ -110,7 +101,7 @@ def get_genes_from_kegg(pathway: str) -> list:
 def main(gtf_file: str, outfile: str):
     pathway = "hsa04612"
     genes_to_exclude = get_genes_from_kegg(pathway)
-    allowed_chrs = ['X', 'Y'] + [str(i) for i in range(1, 23)]
+    allowed_chrs = ['chrX', 'chrY'] + [f'chr{(i)}' for i in range(1, 23)]
     # keep also a stored list of sets to keep track of added intervals.
     intervals = set()
     with open(gtf_file, 'r') as gtf:

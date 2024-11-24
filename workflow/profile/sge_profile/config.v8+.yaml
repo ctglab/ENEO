@@ -1,0 +1,32 @@
+executor: cluster-generic
+cluster-generic-submit-cmd:
+  mkdir -p slurm-logs/{rule} &&
+  qsub
+    -pe smp {resources.ncpus}
+    -l mem_free={resources.mem}
+    -l h_rt={resources.time}
+    -N smk-{rule}-{wildcards}
+    -o slurm-logs/{rule}/{rule}-{wildcards}-$JOB_ID.out
+    -e slurm-logs/{rule}/{rule}-{wildcards}-$JOB_ID.err
+    -q all.q
+default-resources:
+  - mem="8G"
+  - time="01:30:00"
+  - ntasks=1
+local-cores: 1
+latency-wait: 60
+jobs: 500
+keep-going: True
+rerun-incomplete: True
+printshellcmds: True
+scheduler: greedy
+use-conda: True
+use-singularity: True
+conda-frontend: conda
+# here you had to bind multiple directories: 
+# -the resources directory
+# -the temporary directory
+# -the output directory
+# -the workflow directory
+# additionally, you had to set the TMPDIR environment variable to the temporary directory
+singularity-args: '-B /../ENEO_res -B /../temp_gatk -B /../ENEO_output -B /../ENEO/workflow --env TMPDIR=/../temp_gatk'

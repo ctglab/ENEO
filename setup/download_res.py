@@ -171,64 +171,72 @@ class ResourceEntry(object):
         - AC: Alleles count
         - AF: Alleles frequency
         """
+        #experimental: use bcftools to compute values
+        vcf_out = os.path.join(self.outfolder, self.main_filename.replace('.vcf.gz', '_withAF.vcf.gz'))
+        fill_string = "'INFO/AN:1=int(smpl_sum(AN))','INFO/AC:1=int(smpl_sum(AC))','INFO/AF:1=float(AC/AN)'"
+        cmd1 = f"bcftools fill-tags {os.path.join(self.outfolder, self.main_filename)} -Oz -o {vcf_out} -- -t {fill_string}"
+        subprocess.run([cmd1], shell=True)
+        subprocess.run(["tabix", "-p", "vcf", vcf_out])
+        # now update the main filename
+        self.main_filename = vcf_out.split("/")[-1]
+        
+        # def calc_freq(variant: cyvcf2.Variant):
+        #     ANs = variant.format(field="AN")
+        #     ACs = variant.format(field="AC")
+        #     # the AN and AC fields are lists of strings
+        #     # I'll take the first element, as they're the resuming
+        #     # of every cohort
+        #     AN = int(ANs[0][-1])
+        #     AC = int(ACs[0][-1])
+        #     try:
+        #         AF = float(AC / AN)
+        #     except ZeroDivisionError:
+        #         AF = 0
+        #     return AN, AC, AF
 
-        def calc_freq(variant: cyvcf2.Variant):
-            ANs = variant.format(field="AN")
-            ACs = variant.format(field="AC")
-            # the AN and AC fields are lists of strings
-            # I'll take the first element, as they're the resuming
-            # of every cohort
-            AN = int(ANs[0][-1])
-            AC = int(ACs[0][-1])
-            try:
-                AF = float(AC / AN)
-            except ZeroDivisionError:
-                AF = 0
-            return AN, AC, AF
-
-        vcf = cyvcf2.VCF(os.path.join(
-            self.outfolder, self.main_filename), threads=4)
-        vcf.add_info_to_header(
-            {
-                "ID": "AN",
-                "Description": "Total allele in genotypes",
-                "Type": "Integer",
-                "Number": "A",
-            }
-        )
-        vcf.add_info_to_header(
-            {
-                "ID": "AC",
-                "Description": "Allele count in genotypes",
-                "Type": "Integer",
-                "Number": "A",
-            }
-        )
-        vcf.add_info_to_header(
-            {
-                "ID": "AF",
-                "Description": "Allele Frequency",
-                "Type": "Float",
-                "Number": "A",
-            }
-        )
-        # open the writer
-        fpath = os.path.join(
-            self.outfolder, self.main_filename.replace(
-                ".vcf.gz", "_withAF.vcf.gz")
-        )
-        w = cyvcf2.Writer(fpath, vcf, mode="wz")
-        for variant in vcf:
-            variant.INFO["AN"], variant.INFO["AC"], variant.INFO["AF"] = calc_freq(
-                variant
-            )
-            w.write_record(variant)
-        vcf.close()
-        w.close()
-        # do also the index
-        subprocess.run(["tabix", "-p", "vcf", fpath])
-        # update the target filename accordingly
-        self.main_filename = fpath.split("/")[-1]
+        # vcf = cyvcf2.VCF(os.path.join(
+        #     self.outfolder, self.main_filename), threads=4)
+        # vcf.add_info_to_header(
+        #     {
+        #         "ID": "AN",
+        #         "Description": "Total allele in genotypes",
+        #         "Type": "Integer",
+        #         "Number": "A",
+        #     }
+        # )
+        # vcf.add_info_to_header(
+        #     {
+        #         "ID": "AC",
+        #         "Description": "Allele count in genotypes",
+        #         "Type": "Integer",
+        #         "Number": "A",
+        #     }
+        # )
+        # vcf.add_info_to_header(
+        #     {
+        #         "ID": "AF",
+        #         "Description": "Allele Frequency",
+        #         "Type": "Float",
+        #         "Number": "A",
+        #     }
+        # )
+        # # open the writer
+        # fpath = os.path.join(
+        #     self.outfolder, self.main_filename.replace(
+        #         ".vcf.gz", "_withAF.vcf.gz")
+        # )
+        # w = cyvcf2.Writer(fpath, vcf, mode="wz")
+        # for variant in vcf:
+        #     variant.INFO["AN"], variant.INFO["AC"], variant.INFO["AF"] = calc_freq(
+        #         variant
+        #     )
+        #     w.write_record(variant)
+        # vcf.close()
+        # w.close()
+        # # do also the index
+        # subprocess.run(["tabix", "-p", "vcf", fpath])
+        # # update the target filename accordingly
+        # self.main_filename = fpath.split("/")[-1]
 
 
 def update_yaml(conf_main: str, resources: str, outfolder: str):

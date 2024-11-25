@@ -12,7 +12,7 @@ Then inside the folder `worflow/profile` you'll find for each of the supported m
 
 !!! tip
 
-The following notes reported examples using the legacy config file. However, the relevant edits are the same! 
+  The following notes reported examples using the legacy config file. However, the relevant edits are the same! 
 
 ## Singularity args
 

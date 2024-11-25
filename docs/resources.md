@@ -23,6 +23,11 @@ This script will download different resources:
 - REDI portal
 - VEP cache (v105)
 
+ENEO uses also COSMIC, to further annotate known somatic variants with the relevant COSMIC id. According to the nature of your entity (Commercial or Non-Commercial), please download the cosmic VCF file following the guidelines on the [website](https://cancer.sanger.ac.uk/cosmic/download/cosmic). After downloading, add the PATH of the downloaded VCF into the configuration file (located under `config/config_main.yaml`) 
+
+!!! note
+    If you're not interested in using COSMIC and are not interested in adding this notation, you had to edit the file in `workflow/utils/vcfanno.toml`. In details, you had to remove the lines 31-35 and the lines 43-51
+
 ## What if I already got some of them?
 
 The configuration script works by controlling the existence of the files whose path is written inside the main configuration file `conf_main.yaml`, located in the `config` folder. If any of those files are already in your machine, just edit the configuration file adding the right *absolute* path. The script will check for its presence without re-downloading it.

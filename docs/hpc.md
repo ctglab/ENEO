@@ -11,7 +11,6 @@ pip install snakemake-executor-plugin-cluster-generic
 Then inside the folder `worflow/profile` you'll find for each of the supported method (SLURM/SGE) two configuration files: one with the string `v8` in the name, used by Snakemake version >8.0.0, and a legacy `config.yaml`, for older versions. 
 
 !!! tip
-
   The following notes reported examples using the legacy config file. However, the relevant edits are the same! 
 
 ## Singularity args

@@ -32,7 +32,7 @@ ENEO uses also COSMIC, to further annotate known somatic variants with the relev
 
 The configuration script works by controlling the existence of the files whose path is written inside the main configuration file `conf_main.yaml`, located in the `config` folder. If any of those files are already in your machine, just edit the configuration file adding the right *absolute* path. The script will check for its presence without re-downloading it.
 
-!!! warning
+!!! failure
     The annotation for files must be concordant throughout the pipeline, to avoid any error. Be sure to add resources manually only if you're sure of their concordance.
 
 

@@ -2,7 +2,7 @@
 
 By default, ENEO performs variant calling on exons of protein coding genes, with the exception of two types of calling regions:
 
-- Known hard-to-call regions of the human genome. These regions were [extensively profiled](https://www.biorxiv.org/content/10.1101/2023.10.27.563846v1.full) by the GIAB consortium, and are [publicly available](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/genome-stratifications/v3.5/GRCh38@all/). 
+- Known hard-to-call regions of the human genome. These regions were [extensively profiled](https://www.biorxiv.org/content/10.1101/2023.10.27.563846v1.full) by the GIAB consortium, and are [publicly available](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/genome-stratifications/v3.5/GRCh38@all/). This regions are removed from the VCF file and so are not present in the final VCF output.
 
 - Genes involved in the antigen presentation: given the initial goal of the pipeline to be applied in a personalized cancer vaccine setup, we discared these genes as a source of unwanted variations. We obtained the set of genes using the KEGG pathway annotated as 
 
@@ -91,65 +91,15 @@ By default, ENEO performs variant calling on exons of protein coding genes, with
 
 ## Generate a custom interval set
 
-To build a custom set of intervals, you'll need `bedtools` installed. If you built a conda environment for the setup using the `setup_env.yml` file, `bedtools` will be present.
-
-Download from the GIAB ftp the intervals to use
+To build a custom set of intervals from a GTF file (here referred to as `genecode.gtf.gz`), you need to have `tabix` and `bgzip` installed. If you built a conda environment for the setup using the `setup_env.yml` file, `tabix` and `bgzip` will be present.
 
 ```sh
-wget https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/genome-stratifications/v3.4/GRCh38@all/LowComplexity/GRCh38_AllTandemRepeats_51to200bp_slop5.bed.gz &\
-wget https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/genome-stratifications/v3.4/GRCh38@all/LowComplexity/GRCh38_AllTandemRepeats_ge101bp_slop5.bed.gz &\
-wget https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/genome-stratifications/v3.4/GRCh38@all/OtherDifficult/GRCh38_KIR.bed.gz &\
-wget https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/genome-stratifications/v3.4/GRCh38@all/OtherDifficult/GRCh38_MHC.bed.gz &\
-wget https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/genome-stratifications/v3.4/GRCh38@all/OtherDifficult/GRCh38_VDJ.bed.gz &\
-wget https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/genome-stratifications/v3.4/GRCh38@all/LowComplexity/GRCh38_SimpleRepeat_quadTR_50to149_slop5.bed.gz &\
-wget https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/genome-stratifications/v3.4/GRCh38@all/LowComplexity/GRCh38_SimpleRepeat_quadTR_ge150_slop5.bed.gz &\
-wget https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/genome-stratifications/v3.4/GRCh38@all/LowComplexity/GRCh38_SimpleRepeat_triTR_50to149_slop5.bed.gz &\
-wget https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/genome-stratifications/v3.4/GRCh38@all/LowComplexity/GRCh38_SimpleRepeat_homopolymer_ge12_slop5.bed.gz
+zgrep "protein_coding" gencode.gtf.gz | awk -F'\t' '{ if ($3 == "exon") print $1, $2, $3}' OFS='\t' - | bgzip -c > calling_intervals.BED.gz &&\
+tabix -p bed calling_intervals.BED.gz
 ```
 
-These intervals have a slop of 5bp, in both start and end. So we're gonna remove it before intersecting intervals with bedtools with the following script, that we save inside a file called `drop_slop.py` 
+Then you can use the `calling_intervals.BED.gz` file as the input for the variant calling step, by putting it in the `config_main.yaml`
 
-```python
-import sys
-import gzip
-import os
 
-def main(iput: str):
-    with gzip.open(iput, 'rt') as f:
-        outfile = os.path.basename(iput).replace('_slop5', '')
-        with gzip.open(outfile, 'wt') as out:
-            for line in f:
-                chrom, start, end = line.rstrip().split('\t')
-                if int(end) >= int(start) and int(end) - int(start) > 1:
-                    chrom = chrom.split('chr')[1]
-                    start = int(start) + 4
-                    end = int(end) - 4
-                    if end - start > 5:
-                        out.write(f'{chrom}\t{start}\t{end}\n')
-                else:
-                    continue
-
-if __name__ == '__main__':
-    main(sys.argv[1])
-```
-
-Then we'll edit all the intervals with
-
-```sh
-for bed_file in $PWD/*slop5*.bed.gz ; do python3 drop_slop.py $bed_file ${bed_file/_slop5/_no_slop} ; done
-```
-
-Now we could intersect all the intervals with the custom interval file. Assuming it is called `calling_intervals.BED.gz`, the command will be
-
-```sh
-files=($(find $PWD -maxdepth 1 -type f -name "GRCh38*.bed.gz" | grep -v "_slop5")) &\
-bedtools multiinter -i calling_intervals.BED.gz "${files[@]}" | awk -F'\t' '{if ($5 == 1) print $0}' - | sort -k1,1 -k2,2n | bgzip -c > ENEO_callset.BED.gz
-```
-
-!!! tip
-    Focusing on exonic portions of target genes is less likely to produce systematic errors in variant calling from RNA-seq, due to the splicing mechanism. A nice trick to get these regions could be using just awk and the gtf:
-    ```
-    zgrep "protein_coding" gencode.gtf.gz | awk -F'\t' '{ if ($3 == "exon") print $1, $2, $3}' OFS='\t' - | bgzip -c > calling_intervals.BED.gz   
-    ```
 
 

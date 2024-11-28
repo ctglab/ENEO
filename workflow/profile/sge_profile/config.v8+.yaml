@@ -29,4 +29,4 @@ conda-frontend: conda
 # -the output directory
 # -the workflow directory
 # additionally, you had to set the TMPDIR environment variable to the temporary directory
-singularity-args: '-B /../ENEO_res -B /../temp_gatk -B /../ENEO_output -B /../ENEO/workflow --env TMPDIR=/../temp_gatk'
+singularity-args: '-B /../ENEO_res -B /../ENEO_temp -B /../ENEO_output -B /../ENEO/workflow --env TMPDIR=/../ENEO_temp'

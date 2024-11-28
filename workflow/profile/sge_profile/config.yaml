@@ -19,3 +19,4 @@ keep-going: True
 rerun-incomplete: True
 printshellcmds: True
 scheduler: greedy
+singularity-args: '-B /../ENEO_res -B /../ENEO_temp -B /../ENEO_output -B /../ENEO/workflow --env TMPDIR=/../ENEO_temp'

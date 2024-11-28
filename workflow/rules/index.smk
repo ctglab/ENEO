@@ -9,8 +9,8 @@ rule star_index:
             "/" +
             "genome_index"),
     threads: config["params"]["STAR"]["threads"]
-    conda:
-        "../envs/star.yml"
+    container:
+        "docker://danilotat/eneo"
     log:
         config["datadirs"]["logs"]["star_idx"]
         + "/"

@@ -18,8 +18,8 @@ rule BQSR_1:
         ncpus=4,
         mem="32G",
     threads: config["params"]["BQSR"]["threads"]
-    conda:
-        "../envs/gatk.yml"
+    container:
+        "docker://danilotat/eneo"
     log:
         config["OUTPUT_FOLDER"]
         + config["datadirs"]["logs"]["base_recalibration"]
@@ -53,8 +53,8 @@ rule applyBQSR:
         + "/"
         + "{patient}_recal.bam"),
     threads: config["params"]["BQSR"]["threads"]
-    conda:
-        "../envs/gatk.yml"
+    container:
+        "docker://danilotat/eneo"
     resources:
         time="6:00:00",
         ncpus=4,
@@ -90,8 +90,8 @@ rule compressBam:
         + "/"
         + "{patient}_recal.cram.crai",
     threads: config["params"]["samtools"]["threads"],
-    conda:
-        "../envs/samtools.yml"
+    container:
+        "docker://danilotat/eneo"
     resources:
         time="2:00:00",
         ncpus=4,

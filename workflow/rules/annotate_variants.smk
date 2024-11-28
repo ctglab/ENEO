@@ -14,7 +14,6 @@ rule annotate_variants:
         plugin_wt=config["params"]["vep"]["extra"]["plugins"]["Wildtype"],
         plugin_fs=config["params"]["vep"]["extra"]["plugins"]["Frameshift"],
         cache=config["resources"]["vep_cache"],
-        #plugins=config["resources"]["vep_plugin_dir"],
     output:
         vcfout=temp(config["OUTPUT_FOLDER"]
         + config["datadirs"]["VCF_out"]
@@ -25,7 +24,7 @@ rule annotate_variants:
         filtering=config["params"]["vep"]["extra"]["filtering"],
         plugin_dir=lambda wc, input: os.path.dirname(input.plugin_wt),
     container:
-        "docker://ensemblorg/ensembl-vep:release_105.0",
+        "docker://danilotat/eneo",
     resources:
         mem="6G",
         time="2:00:00",
@@ -63,8 +62,8 @@ rule compress_annotated_vcf:
         + config["datadirs"]["VCF_out"]
         + "/"
         + "{patient}.vep.vcf.gz.tbi",
-    conda:
-        "../envs/samtools.yml",
+    container:
+        "docker://danilotat/eneo",
     resources:
         mem="6G",
         time="1:00:00",

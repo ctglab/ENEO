@@ -1,25 +1,5 @@
 # experimental execution of different paths based on .fastq.gz input or .bam
 
-rule prepare_dat:
-    output:
-        dat_file=config["OUTPUT_FOLDER"]
-            + config["datadirs"]["HLA_typing"]
-            + "/"
-            "hlaidx/hla.dat",
-    params:
-        outdir=lambda w, output: os.path.dirname(os.path.abspath(output.dat_file)),
-    conda:
-        "../envs/t1k.yml"
-    log:
-        config["OUTPUT_FOLDER"] 
-        + config["datadirs"]["logs"]["t1k"] 
-        + "/" 
-        + "hla_preset.log",
-    shell:
-        """
-        t1k-build.pl -o {params.outdir} --download IPD-IMGT/HLA
-        """
-
 if execution_mode == "full":
     rule genotype:
         input:
@@ -69,8 +49,8 @@ if execution_mode == "full":
         params:
             prefix="{patient}",
             outdir=lambda w, output: os.path.dirname(os.path.abspath(output.hla)),
-        conda:
-            "../envs/t1k.yml"
+        container:
+            "docker://danilotat/eneo"
         threads: config["params"]["t1k"]["threads"]
         resources:
             time="4:00:00",
@@ -91,7 +71,7 @@ elif execution_mode == "reduced":
         input:
             genome=config["resources"]["genome"],
             gtf=config["resources"]["gtf"],
-            idx=config["resources"]["t1k_file"],
+            idx=config["params"]["t1k"]["dat_file"],
         output:
             coords_dna=config["OUTPUT_FOLDER"]
                 + config["datadirs"]["HLA_typing"]
@@ -102,9 +82,13 @@ elif execution_mode == "reduced":
                 + "/"
                 "_rna_coord.fa",
         params:
-            outdir=lambda w, output: os.path.dirname(os.path.abspath(output.hla)),
-        conda:
-            "../envs/t1k.yml"
+            outdir=lambda w, output: os.path.dirname(os.path.abspath(output.coords_rna)),
+        container:
+            "docker://danilotat/eneo",
+        resources:
+            time="2:00:00",
+            ncpus=4,
+            mem="10G",
         log:
             config["OUTPUT_FOLDER"] 
             + config["datadirs"]["logs"]["t1k"] 
@@ -121,6 +105,10 @@ elif execution_mode == "reduced":
         input:
             unpack(get_bam),
             idx=config["resources"]["t1k_file"],
+            coords=config["OUTPUT_FOLDER"]
+                + config["datadirs"]["HLA_typing"]
+                + "/"
+                "_rna_coord.fa",
         output:
             temp(
                 config["OUTPUT_FOLDER"]
@@ -180,7 +168,7 @@ elif execution_mode == "reduced":
         shell:
             """
             run-t1k -b {input.bam} --preset hla \
-            -f {input.idx} -g {input.coords} \
+            -f {input.idx} -c {input.coords} \
             -t {threads} -o {params.prefix} \
             --od {params.outdir} 
             """
@@ -198,7 +186,7 @@ rule extract_hla:
         + "/"
         + "{patient}_allele_input_pvacseq.csv",
     container:
-        "docker://danilotat/netmhcpan-minimal"
+        "docker://danilotat/eneo"
     log:
         config["OUTPUT_FOLDER"] 
         + config["datadirs"]["logs"]["t1k"]

@@ -41,8 +41,8 @@ rule vcfanno:
         time="1:00:00",
         ncpus=4,
         mem="16G",
-    conda:
-        "../envs/samtools.yml"
+    container:
+        "docker://danilotat/eneo"
     shell:
         """
         {params.vcfanno_binary} -lua {params.lua} -p {threads} {params.extra} {input.toml_file} {input.vcf} |\
@@ -71,8 +71,8 @@ rule filtercalls:
             + "/"
             + "{patient}_DP_filt.vcf.gz.tbi"
         ),
-    conda:
-        "../envs/samtools.yml"
+    container:
+        "docker://danilotat/eneo"
     threads: config["params"]["samtools"]["threads"]
     log:
         config["OUTPUT_FOLDER"]
@@ -99,8 +99,8 @@ rule createTOML:
         toml_script=config["params"]["vcfanno"]["toml_script"],
     output:
         toml_file=config["OUTPUT_FOLDER"] + "vcfanno.toml",
-    conda:
-        "../envs/cyvcf2.yml"
+    container:
+        "docker://danilotat/eneo"
     log:
         config["OUTPUT_FOLDER"]
         + config["datadirs"]["logs"]["annotate_variants"]
@@ -132,8 +132,8 @@ rule germProb:
         + config["datadirs"]["VCF_out"]
         + "/"
         + "{patient}_annot_germProb.vcf.gz",
-    conda:
-        "../envs/cyvcf2.yml"
+    container:
+        "docker://danilotat/eneo"
     log:
         config["OUTPUT_FOLDER"]
         + config["datadirs"]["logs"]["annotate_variants"]
@@ -160,8 +160,8 @@ rule indexgermProb:
         + config["datadirs"]["VCF_out"]
         + "/"
         + "{patient}_annot_germProb.vcf.gz.tbi",
-    conda:
-        "../envs/samtools.yml"
+    container:
+        "docker://danilotat/eneo"
     log:
         config["OUTPUT_FOLDER"]
         + config["datadirs"]["logs"]["annotate_variants"]

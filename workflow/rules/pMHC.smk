@@ -25,7 +25,7 @@ rule pMHCpeptides:
         + "/"
         + "{patient}.epitopes.csv",
     container:
-        "docker://danilotat/netmhcpan-minimal"
+        "docker://danilotat/eneo"
     log:
         config["OUTPUT_FOLDER"]
         + config["datadirs"]["logs"]["pMHC"]
@@ -69,7 +69,7 @@ rule filter_peptides:
         ncpus=2,
         mem="2G",
     container:
-        "docker://danilotat/netmhcpan-minimal"
+        "docker://danilotat/eneo"
     shell:
         """
         python3 {input.script} -i {input.peptides} -c {input.calibration_frame} -a {input.hla_ligand_atlas} -o {output.out} -min {params.min_length} -max {params.max_length} -g {params.germProb}

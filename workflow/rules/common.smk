@@ -16,7 +16,7 @@ elif config["execution_mode"].lower() == "full":
     execution_mode = "full"
     print(f"The pipeline will be executed in the {execution_mode} mode")
 else:
-    raise ValueError(f"The parameter {filetype} must be one of 'bam' or 'fastq'.")
+    raise ValueError(f"The parameter 'execution_mode' must be one of ['bam','fastq'].")
 
 # Load patient info.
 # Note that this dataframe is accessed every time to determine the wildcards used

@@ -15,9 +15,9 @@ rule trimming_pe:
         json=config["datadirs"]["trimming_report"] + "/" + "{patient}_fastp.json",
     params:
         extra=config["params"]["fastp"]["pe"],
-    threads: config["params"]["thread"]
-    conda:
-        "../envs/fastp.yml"
+    threads: config["params"]["thread"],
+    container:
+        "docker://danilotat/eneo"
     log:
         config["datadirs"]["logs"]["trimming"] + "/" + "{patient}.log",
     wrapper:

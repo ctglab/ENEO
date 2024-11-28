@@ -18,8 +18,8 @@ rule Strelka_prep:
         + config["datadirs"]["VCF_out"]
         + "/"
         + "{patient}_workflow",
-    conda:
-        "../envs/strelka2.yml"
+    container:
+        "docker://danilotat/strelka2"
     log:
         config["OUTPUT_FOLDER"]
         + config["datadirs"]["logs"]["snv_calling"]
@@ -64,8 +64,8 @@ rule Strelka2:
         + "checkpoint.txt",
     params:
         threads=config["params"]["strelka2"]["threads"],
-    conda:
-        "../envs/strelka2.yml"
+    container:
+        "docker://danilotat/strelka2"
     log:
         config["OUTPUT_FOLDER"]
         + config["datadirs"]["logs"]["snv_calling"]

@@ -1,13 +1,21 @@
-OUTPUT_FOLDER: ENEO_output/
-TEMP_DIR: temp_gatk
+# This is the main configuration file for the ENEO pipeline.
+# Here you can set the paths to the input data, the output folder, the resources used by the pipeline, and the parameters for the tools used.
+# For information on how to set up the pipeline, please refer to the documentation available at https://ctglab.github.io/ENEO/
+# If you spot any issues or have any questions, please open an issue on the GitHub repository at
+# https://github.com/ctglab/ENEO/issues
+
+# Execution mode defines the type of execution based on input file type. 
+# If you're going to run the pipeline using aligned .BAM files, set the execution_mode to "reduced".
+# If you're going to run the pipeline using raw .FASTQ files, set the execution_mode to "full".
+# Remember to edit the units.csv file accordingly.
+execution_mode: "reduced"
+OUTPUT_FOLDER: /../ENEO_output/
+TEMP_DIR: /../ENEO_temp/
 datadirs:
-  BQSR: BQSR
-  HLA_typing: HLA_typing
-  VCF: VCF
-  VCF_germ: VCF_germ
-  VCF_out: VCF_out
   bams: bams
+  BQSR: BQSR
   expression: expression_data
+  HLA_typing: HLA_typing
   index_folder: genome_index
   logs:
     align: log/align
@@ -32,34 +40,29 @@ datadirs:
   trimmed_reads: trimmed_reads
   trimming_report: fastp_report
   utils: utils
+  VCF: VCF
+  VCF_out: VCF_out
 params:
   BQSR:
     RAM: 30000
-    extra: ''
-    threads: 4
-  MarkDuplicates:
-    RAM: 30000
-    extra: ''
-    threads: 4
-  STAR:
-    RAM: null
-    extra: '--twopassMode Basic --outSAMtype BAM Unsorted --readFilesCommand zcat '
-    threads: 12
-  SplitNCigarReads:
-    RAM: 30000
-    extra: ''
     threads: 4
   gatk:
     RAM: 20
     extra:
       RGPU: unit1
       RGSM: 20
+  MarkDuplicates:
+    RAM: 30000
+    threads: 4
   pMHC:
     threads: 4
-  pvacseq:
-    RAM: null
-    extra: null
-    threads: 2
+    netmhcpan_launcher_script: workflow/scripts/netmhcpan_launcher.py
+    calibration_frame: workflow/supplementary_res/optimal_percentile_netmhcpan.csv
+    hla_ligand_atlas: workflow/supplementary_res/HLA_ligand_atlas.tsv.gz
+    filter_peptides_script: workflow/scripts/filter_peptides.py
+    min_length: 8
+    max_length: 12
+    germProb: 0.5
   salmon:
     RAM: null
     extra:
@@ -69,48 +72,47 @@ params:
       zip_ext: gz
     threads: 8
   samtools:
-    RAM: null
-    extra: ''
     threads: 4
-  strelka2:
+  SplitNCigarReads:
+    RAM: 30000
+    threads: 4
+  STAR:
     RAM: null
-    extra: null
+    extra: '--twopassMode Basic --outSAMtype BAM Unsorted --readFilesCommand zcat '
+    threads: 12
+  strelka2:
     threads: 8
   t1k:
-    RAM: null
-    extra: null
     threads: 8
+    dat_file: workflow/supplementary_res/hla.dat
   vcfanno:
-    RAM: null
-    extra: null
     threads: 8
+    toml_script: workflow/scripts/createTOML.py
+    vcfanno_binary: workflow/utils/vcfanno_linux64
+    vcfanno_lua: workflow/utils/custom.lua
+    vcfanno_toml: workflow/utils/vcfanno.toml
   vep:
-    RAM: null
     extra:
       assembly: GRCh38
       filtering: --gencode_basic --coding_only --no_intergenic
       plugins:
         Frameshift: workflow/utils/vep_plugins/Frameshift.pm
         Wildtype: workflow/utils/vep_plugins/Wildtype.pm
-    threads: null
 resources:
-  cosmic: test_data/cosmic_chr6.vcf.gz
-  dbsnps: freq.vcf.gz
-  genome: Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz
+  REDI: /path/to/REDI_portal.BED.gz
+  cosmic: /path/to/cosmic.vcf.gz
+  dbsnps: /path/to/freq_withAF.vcf.gz
+  genome: /path/to/GRCh38.p14.genome.fa
   germline_prob_script: workflow/scripts/germProb.py
   giab_intervals: workflow/supplementary_res/GRCh38_giab_merged.bed.gz
-  gnomad: af-only-gnomad.hg38.vcf.gz
-  gsnps: 1000G_phase1.snps.high_confidence.hg38.vcf.gz
-  gtf: Homo_sapiens.GRCh38.105.gtf.gz
+  gnomad: /path/to/af-only-gnomad.hg38.vcf.gz
+  gsnps: /path/to/1000G_phase1.snps.high_confidence.hg38.vcf.gz
+  gtf: /path/to/gencode.v47.primary_assembly.annotation.gtf.gz
   hla_script: workflow/scripts/HLA_typing.py
-  indel: Homo_sapiens_assembly38.known_indels.vcf.gz
+  indel: /path/to/Homo_sapiens_assembly38.known_indels.vcf.gz
   intervals_coding: workflow/supplementary_res/intervals_coding.BED.gz
-  REDI: TABLE1_hg38.txt.gz
   t1k_file: workflow/supplementary_res/hlaidx_rna_seq.fa
   toml_script: workflow/scripts/createTOML.py
-  transcriptome: Homo_sapiens.GRCh38.cdna.all.fa.gz
-  vep_cache: homo_sapiens_vep_105_GRCh38.tar.gz
-  vcfanno_binary: workflow/utils/vcfanno_linux64
-  vcfanno_lua: workflow/utils/custom.lua
-  vcfanno_toml: workflow/utils/vcfanno.toml
+  transcriptome: /path/to/gencode.v47.transcripts.fa.gz
+  vep_cache: /g100_scratch/userexternal/dtatoni0/repos/ENEO_res
 slurm_log_dir: slurm-logs

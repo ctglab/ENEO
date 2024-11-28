@@ -78,5 +78,5 @@ rule Strelka2:
     shell:
         """
         {input.script} -m local -j {params.threads}
-        touch "finished" > {output.txt}
+        cat "finished" > {output.txt}
         """

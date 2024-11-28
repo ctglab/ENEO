@@ -265,6 +265,7 @@ def update_yaml(conf_main: str, resources: str, outfolder: str):
             elif resource_entry.res_type == "archive":
                 if not os.path.isdir(conf_main_yaml["resources"][res_name]):
                     # that's for VEP: download and extract
+                    vep_cache_dir = os.path.join(outfolder, "vep_cache")
                     resource_entry._download_stuff()
                     subprocess.run(
                         [
@@ -272,12 +273,10 @@ def update_yaml(conf_main: str, resources: str, outfolder: str):
                             "-xzvf",
                             os.path.join(outfolder, resource_entry.main_filename),
                             "-C",
-                            os.path.abspath(outfolder)
+                            os.path.abspath(vep_cache_dir),
                         ]
                     )
-                    resource_entry.main_filename = os.path.join(
-                        os.path.abspath(outfolder), 'homo_sapiens'
-                    )
+                    resource_entry.main_filename = vep_cache_dir
             # update entry accordingly
             conf_main_yaml["resources"][res_name] = os.path.join(
                 os.path.abspath(outfolder), resource_entry.main_filename

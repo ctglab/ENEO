@@ -171,7 +171,6 @@ class ResourceEntry(object):
         - AC: Alleles count
         - AF: Alleles frequency
         """
-        #experimental: use bcftools to compute values
         vcf_out = os.path.join(self.outfolder, self.main_filename.replace('.vcf.gz', '_withAF.vcf.gz'))
         fill_string = "'INFO/AN:1=int(smpl_sum(AN))','INFO/AC:1=int(smpl_sum(AC))','INFO/AF:1=float(AC/AN)'"
         cmd1 = f"bcftools fill-tags {os.path.join(self.outfolder, self.main_filename)} -Oz -o {vcf_out} -- -t {fill_string}"
@@ -179,65 +178,6 @@ class ResourceEntry(object):
         subprocess.run(["tabix", "-p", "vcf", vcf_out])
         # now update the main filename
         self.main_filename = vcf_out.split("/")[-1]
-        
-        # def calc_freq(variant: cyvcf2.Variant):
-        #     ANs = variant.format(field="AN")
-        #     ACs = variant.format(field="AC")
-        #     # the AN and AC fields are lists of strings
-        #     # I'll take the first element, as they're the resuming
-        #     # of every cohort
-        #     AN = int(ANs[0][-1])
-        #     AC = int(ACs[0][-1])
-        #     try:
-        #         AF = float(AC / AN)
-        #     except ZeroDivisionError:
-        #         AF = 0
-        #     return AN, AC, AF
-
-        # vcf = cyvcf2.VCF(os.path.join(
-        #     self.outfolder, self.main_filename), threads=4)
-        # vcf.add_info_to_header(
-        #     {
-        #         "ID": "AN",
-        #         "Description": "Total allele in genotypes",
-        #         "Type": "Integer",
-        #         "Number": "A",
-        #     }
-        # )
-        # vcf.add_info_to_header(
-        #     {
-        #         "ID": "AC",
-        #         "Description": "Allele count in genotypes",
-        #         "Type": "Integer",
-        #         "Number": "A",
-        #     }
-        # )
-        # vcf.add_info_to_header(
-        #     {
-        #         "ID": "AF",
-        #         "Description": "Allele Frequency",
-        #         "Type": "Float",
-        #         "Number": "A",
-        #     }
-        # )
-        # # open the writer
-        # fpath = os.path.join(
-        #     self.outfolder, self.main_filename.replace(
-        #         ".vcf.gz", "_withAF.vcf.gz")
-        # )
-        # w = cyvcf2.Writer(fpath, vcf, mode="wz")
-        # for variant in vcf:
-        #     variant.INFO["AN"], variant.INFO["AC"], variant.INFO["AF"] = calc_freq(
-        #         variant
-        #     )
-        #     w.write_record(variant)
-        # vcf.close()
-        # w.close()
-        # # do also the index
-        # subprocess.run(["tabix", "-p", "vcf", fpath])
-        # # update the target filename accordingly
-        # self.main_filename = fpath.split("/")[-1]
-
 
 def update_yaml(conf_main: str, resources: str, outfolder: str):
     """
@@ -263,71 +203,85 @@ def update_yaml(conf_main: str, resources: str, outfolder: str):
                     res_name=res_name,
                     outfolder=outfolder,
             )
-            if resource_entry.downloaded:
-                print(f"{resource_entry.res_name} is already present.")
-            else:
-                if resource_entry.res_type in ["fasta", "gtf"]:
-                    resource_entry._download_stuff()
-                    # if it's a genome, do also the dictionary
-                    if "genome" in resource_entry.main_filename:
-                        outfile = os.path.join(outfolder, resource_entry.main_filename.replace('.fa.gz', '.dict'))
-                        subprocess.run(
-                            [
-                                'gatk',
-                                'CreateSequenceDictionary',
-                                '-R',
-                                os.path.join(outfolder, resource_entry.main_filename),
-                                '-O',
-                                outfile
-                            ])
-                elif resource_entry.res_name == "dbsnps":
-                    # # for dbsnps we need to do conversion and then annotation for allele frequency
-                    refseq_conv_table = os.path.join(
-                            os.path.dirname(cwd), "refseq_dbsnp.tsv"
-                        )
-                    chr_converter.generate_conv_file(
-                            "refseq", refseq_conv_table
-                        )
-                    cmd1 = f"bcftools annotate --rename-chrs {refseq_conv_table} {resource_entry.resources_entry['url']} | bgzip -c > {os.path.join(outfolder, resource_entry.main_filename)}"
-                    subprocess.run([cmd1], shell=True)
+            if resource_entry.res_type in ["fasta", "gtf"]:
+                resource_entry._download_stuff()
+                # if it's a genome, do also the dictionary
+                if "genome" in resource_entry.main_filename:
+                    # decompress the genome, as STAR doesn't like gzipped fasta
                     subprocess.run(
-                            [
-                                "tabix",
-                                "-p",
-                                "vcf",
-                                os.path.join(
-                                    outfolder, resource_entry.main_filename),
-                            ]
-                        )
-                    resource_entry.generate_allele_frequency()
-                elif resource_entry.res_type == "table":
-                    # that's the stuff we need to do for the REDI portal file
-                    chr_converter.convert_REDI(
-                        bed_url=resource_entry.resources_entry["url"],
-                        bed_output=os.path.join(outfolder, "REDI_portal.BED"),
+                        [
+                        'gunzip',
+                        os.path.join(outfolder, resource_entry.main_filename)
+                        ]
                     )
-                    resource_entry.main_filename = "REDI_portal.BED.gz"
-                elif resource_entry.res_type == "archive":
-                    if not os.path.isdir(conf_main_yaml["resources"][res_name]):
-                        # that's for VEP: download and extract
-                        resource_entry._download_stuff()
-                        subprocess.run(
-                            [
-                                "tar",
-                                "-xzvf",
-                                os.path.join(outfolder, resource_entry.main_filename),
-                                "-C",
-                                os.path.abspath(outfolder)
-                            ]
-                        )
-                        resource_entry.main_filename = os.path.join(
-                            os.path.abspath(outfolder), 'homo_sapiens'
-                        )
-                # update entry accordingly
-                conf_main_yaml["resources"][res_name] = os.path.join(
-                    os.path.abspath(outfolder), resource_entry.main_filename
-                ) 
-
+                    # do the index using samtools
+                    subprocess.run(
+                        [
+                            "samtools",
+                            "faidx",
+                            os.path.join(outfolder, resource_entry.main_filename.replace('.gz', ''))
+                        ]
+                    )
+                    outfile = os.path.join(outfolder, resource_entry.main_filename.replace('.fa.gz', '.dict'))
+                    subprocess.run(
+                        [
+                            'gatk',
+                            'CreateSequenceDictionary',
+                            '-R',
+                            os.path.join(outfolder, resource_entry.main_filename),
+                            '-O',
+                            outfile
+                        ])
+                    # update the main filename
+                    resource_entry.main_filename = resource_entry.main_filename.replace('.fa.gz', '')
+            elif resource_entry.res_name == "dbsnps":
+                print(f"Converting the dbSNP to Gencode notation")
+                # # for dbsnps we need to do conversion and then annotation for allele frequency
+                refseq_conv_table = os.path.join(
+                        os.path.dirname(cwd), "refseq_dbsnp.tsv"
+                    )
+                chr_converter.generate_conv_file(
+                        "refseq", refseq_conv_table
+                    )
+                cmd1 = f"bcftools annotate --rename-chrs {refseq_conv_table} {resource_entry.resources_entry['url']} | bgzip -c > {os.path.join(outfolder, resource_entry.main_filename)}"
+                subprocess.run([cmd1], shell=True)
+                subprocess.run(
+                        [
+                            "tabix",
+                            "-p",
+                            "vcf",
+                            os.path.join(
+                                outfolder, resource_entry.main_filename),
+                        ]
+                    )
+                resource_entry.generate_allele_frequency()
+            elif resource_entry.res_type == "table":
+                # that's the stuff we need to do for the REDI portal file
+                chr_converter.convert_REDI(
+                    bed_url=resource_entry.resources_entry["url"],
+                    bed_output=os.path.join(outfolder, "REDI_portal.BED"),
+                )
+                resource_entry.main_filename = "REDI_portal.BED.gz"
+            elif resource_entry.res_type == "archive":
+                if not os.path.isdir(conf_main_yaml["resources"][res_name]):
+                    # that's for VEP: download and extract
+                    resource_entry._download_stuff()
+                    subprocess.run(
+                        [
+                            "tar",
+                            "-xzvf",
+                            os.path.join(outfolder, resource_entry.main_filename),
+                            "-C",
+                            os.path.abspath(outfolder)
+                        ]
+                    )
+                    resource_entry.main_filename = os.path.join(
+                        os.path.abspath(outfolder), 'homo_sapiens'
+                    )
+            # update entry accordingly
+            conf_main_yaml["resources"][res_name] = os.path.join(
+                os.path.abspath(outfolder), resource_entry.main_filename
+            ) 
     # that's good, now we could write out the YAML
     with open(conf_main, "w") as conf_main:
         yaml.dump(conf_main_yaml, conf_main)

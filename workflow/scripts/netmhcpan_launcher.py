@@ -10,8 +10,6 @@ import numpy as np
 import shutil
 from multiprocessing import Pool
 
-def phred_to_prob(phred: float):
-    return 10**(-phred/10)
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -44,7 +42,7 @@ class variantExtended(object):
         csq_keys = ["Allele","Consequence","IMPACT","SYMBOL","Gene","Feature_type","Feature","BIOTYPE","EXON","INTRON","HGVSc","HGVSp","cDNA_position","CDS_position","Protein_position","Amino_acids","Codons","Existing_variation","DISTANCE","STRAND","FLAGS","SYMBOL_SOURCE","HGNC_ID","TSL","FrameshiftSequence","WildtypeProtein"]
         self.variant = variant
         self.position = f"{self.variant.CHROM}:{self.variant.POS}-{self.variant.POS + 1}"
-        self.germProb = phred_to_prob(self.variant.INFO.get('hetProb')) + phred_to_prob(self.variant.INFO.get('homaltProb'))
+        self.germProb = 1 - self.variant.INFO.get('somProb')
         if self.variant.INFO.get('CSQ') is not None:
             self.csq = dict(zip(csq_keys, self.variant.INFO.get('CSQ').split('|')))
             try:

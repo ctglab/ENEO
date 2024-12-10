@@ -23,6 +23,8 @@ rule pMHCpeptides:
         out=config["OUTPUT_FOLDER"]
         + config["datadirs"]["peptides"]
         + "/"
+        + "{patient}" 
+        + "/"
         + "{patient}.epitopes.csv",
     container:
         "docker://danilotat/eneo"
@@ -45,6 +47,8 @@ rule filter_peptides:
     input:
         peptides=config["OUTPUT_FOLDER"]
         + config["datadirs"]["peptides"]
+        + "/"
+        + "{patient}"
         + "/"
         + "{patient}.epitopes.csv",
         calibration_frame=config["params"]["pMHC"]["calibration_frame"],

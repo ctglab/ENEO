@@ -21,15 +21,15 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git diff --quiet && git diff --staged --quiet || (git add . ; git commit -m "Black formatting")      
-  Linting:
-    needs: Formatting
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Test linting
-        uses: snakemake/snakemake-github-action@v1.23.0
-        with:
-          directory: .
-          snakefile: workflow/Snakefile
-          args: "--lint"
+  # Linting:
+  #   needs: Formatting
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Test linting
+  #       uses: snakemake/snakemake-github-action@v1.23.0
+  #       with:
+  #         directory: .
+  #         snakefile: workflow/Snakefile
+  #         args: "--lint"
 

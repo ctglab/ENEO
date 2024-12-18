@@ -21,8 +21,6 @@ rule star_index:
         time="6:00:00",
     shell:
         """
-        mkfifo genome
-        zcat {input.fasta} > genome &
         STAR --runMode genomeGenerate --runThreadN {threads} --genomeDir {output} \
         --genomeFastaFiles genome --sjdbOverhang 100 --sjdbGTFfile {input.gtf}"""
 

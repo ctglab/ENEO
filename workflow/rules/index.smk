@@ -3,11 +3,7 @@ rule star_index:
         fasta=config["resources"]["genome"],
         gtf=config["resources"]["gtf"],
     output:
-        directory(
-            config["datadirs"]["index_folder"]
-            +
-            "/" +
-            "genome_index"),
+        directory(config["datadirs"]["index_folder"]),
     threads: config["params"]["STAR"]["threads"]
     container:
         "docker://danilotat/eneo"

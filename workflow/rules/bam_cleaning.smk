@@ -1,16 +1,18 @@
 if execution_mode == "full":
     rule AddGrp:
         input:
-            bam=config["OUTPUT_FOLDER"]
-            + config["datadirs"]["mapped_reads"]
-            + "/"
-            + "{patient}_Aligned.sortedByCoord.out.bam",
+            bam=os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["mapped_reads"],
+                "{patient}_Aligned.sortedByCoord.out.bam"
+            ),
         output:
             rg=temp(
-                config["OUTPUT_FOLDER"]
-                + config["datadirs"]["bams"]
-                + "/"
-                + "{patient}_Aligned.sortedByCoord.out.rg.bam"
+                os.path.join(
+                    config["OUTPUT_FOLDER"],
+                    config["datadirs"]["bams"],
+                    "{patient}_Aligned.sortedByCoord.out.rg.bam"
+                )
             ),
         conda:
             "../envs/gatk.yml"
@@ -24,10 +26,11 @@ if execution_mode == "full":
             time="4:00:00",
             ncpus=4,
         log:
-            config["OUTPUT_FOLDER"]
-            + config["datadirs"]["logs"]["bam_cleaning"]
-            + "/"
-            + "{patient}.log",
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["logs"]["bam_cleaning"],
+                "{patient}.log"
+            ),
         shell:
             """ 
             gatk AddOrReplaceReadGroups  -I {input.bam} -O {output.rg} {params.extra} --TMP_DIR {params.tmp_dir} --RGPU {params.RGPU} --RGSM {params.RGSM}
@@ -38,10 +41,11 @@ elif execution_mode == "reduced":
             unpack(get_bam),
         output:
             rg=temp(
-                config["OUTPUT_FOLDER"]
-                + config["datadirs"]["bams"]
-                + "/"
-                + "{patient}_Aligned.sortedByCoord.out.rg.bam"
+                os.path.join(
+                    config["OUTPUT_FOLDER"],
+                    config["datadirs"]["bams"],
+                    "{patient}_Aligned.sortedByCoord.out.rg.bam"
+                )
             ),
         container:  
             "docker://danilotat/eneo"
@@ -55,10 +59,11 @@ elif execution_mode == "reduced":
             time="4:00:00",
             ncpus=4,
         log:
-            config["OUTPUT_FOLDER"]
-            + config["datadirs"]["logs"]["bam_cleaning"]
-            + "/"
-            + "{patient}.log",
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["logs"]["bam_cleaning"],
+                "{patient}.log"
+            ),
         shell:
             """ 
             gatk AddOrReplaceReadGroups -I {input.bam} -O {output.rg} {params.extra} --TMP_DIR {params.tmp_dir} --RGPU {params.RGPU} --RGSM {params.RGSM}
@@ -69,10 +74,11 @@ rule bed_to_intervals:
         bed=config["resources"]["intervals_coding"],
         fasta_dict=ref_dict,
     output:
-        intervals=config["OUTPUT_FOLDER"]
-        + config["datadirs"]["utils"]
-        + "/"
-        + "coding.interval_list",
+        intervals=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["utils"],
+            "coding.interval_list"
+        ),
     container:
         "docker://danilotat/eneo"
     resources:
@@ -80,10 +86,11 @@ rule bed_to_intervals:
         ncpus=2,
         mem="8G",
     log:
-        config["OUTPUT_FOLDER"]
-        + config["datadirs"]["logs"]["intervals"]
-        + "/"
-        + "interval.log",
+        os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["logs"]["intervals"],
+            "interval.log"
+        ),
     shell:
         """
         gatk BedToIntervalList -I {input.bed} -SD {input.fasta_dict} -O {output.intervals}
@@ -91,22 +98,25 @@ rule bed_to_intervals:
 
 rule mark_duplicates:
     input:
-        bam=config["OUTPUT_FOLDER"]
-        + config["datadirs"]["bams"]
-        + "/"
-        + "{patient}_Aligned.sortedByCoord.out.rg.bam",
+        bam=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["bams"],
+            "{patient}_Aligned.sortedByCoord.out.rg.bam"
+        ),
     output:
         bam=temp(
-            config["OUTPUT_FOLDER"]
-            + config["datadirs"]["bams"]
-            + "/"
-            + "{patient}_Aligned.sortedByCoord.out.md.bam"
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["bams"],
+                "{patient}_Aligned.sortedByCoord.out.md.bam"
+            )
         ),
         metrics=temp(
-            config["OUTPUT_FOLDER"]
-            + config["datadirs"]["bams"]
-            + "/"
-            + "{patient}_Aligned.sortedByCoord.out.metrics.txt"
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["bams"],
+                "{patient}_Aligned.sortedByCoord.out.metrics.txt"
+            )
         ),
     params:
         hard_ram=config["params"]["gatk"]["RAM"],
@@ -119,10 +129,11 @@ rule mark_duplicates:
         time="4:00:00",
         ncpus=4,
     log:
-        config["OUTPUT_FOLDER"]
-        + config["datadirs"]["logs"]["bam_cleaning"]
-        + "/"
-        + "{patient}.log",
+        os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["logs"]["bam_cleaning"],
+            "{patient}.log"
+        ),
     shell:
         """
         gatk --java-options "-Xmx{params.hard_ram}g -XX:+UseParallelGC -XX:ParallelGCThreads={threads}" \
@@ -134,16 +145,18 @@ rule mark_duplicates:
 
 rule sort_bam_gatk:
     input:
-        bam=config["OUTPUT_FOLDER"]
-        + config["datadirs"]["bams"]
-        + "/"
-        + "{patient}_Aligned.sortedByCoord.out.md.bam",
+        bam=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["bams"],
+            "{patient}_Aligned.sortedByCoord.out.md.bam"
+        ),
     output:
         bam_out=temp(
-            config["OUTPUT_FOLDER"]
-            + config["datadirs"]["bams"]
-            + "/"
-            + "{patient}_Aligned.sortedByCoord.out.md.sorted.bam"
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["bams"],
+                "{patient}_Aligned.sortedByCoord.out.md.sorted.bam"
+            )
         ),
     container:
         "docker://danilotat/eneo"
@@ -152,10 +165,11 @@ rule sort_bam_gatk:
         ncpus=2,
         mem="8G",
     log:
-        config["OUTPUT_FOLDER"]
-        + config["datadirs"]["logs"]["bam_cleaning"]
-        + "/"
-        + "{patient}.log",
+        os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["logs"]["bam_cleaning"],
+            "{patient}.log"
+        ),
     shell:
         """
         samtools sort {input.bam} -o {output.bam_out} 
@@ -164,16 +178,18 @@ rule sort_bam_gatk:
 
 rule samtools_index:
     input:
-        bam=config["OUTPUT_FOLDER"]
-        + config["datadirs"]["bams"]
-        + "/"
-        + "{patient}_Aligned.sortedByCoord.out.md.sorted.bam",
+        bam=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["bams"],
+            "{patient}_Aligned.sortedByCoord.out.md.sorted.bam"
+        ),
     output:
         bai=temp(
-            config["OUTPUT_FOLDER"]
-            + config["datadirs"]["bams"]
-            + "/"
-            + "{patient}_Aligned.sortedByCoord.out.md.sorted.bam.bai"
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["bams"],
+                "{patient}_Aligned.sortedByCoord.out.md.sorted.bam.bai"
+            )
         ),
     container:
         "docker://danilotat/eneo"
@@ -182,10 +198,11 @@ rule samtools_index:
         ncpus=2,
         mem="8G",
     log:
-        config["OUTPUT_FOLDER"]
-        + config["datadirs"]["logs"]["bam_cleaning"]
-        + "/"
-        + "{patient}.log",
+        os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["logs"]["bam_cleaning"],
+            "{patient}.log"
+        ),
     shell:
         """
         samtools index {input.bam} {output.bai} 
@@ -194,25 +211,29 @@ rule samtools_index:
 
 rule SplitNCigarReads:
     input:
-        bai=config["OUTPUT_FOLDER"]
-        + config["datadirs"]["bams"]
-        + "/"
-        + "{patient}_Aligned.sortedByCoord.out.md.sorted.bam.bai",
-        bam=config["OUTPUT_FOLDER"]
-        + config["datadirs"]["bams"]
-        + "/"
-        + "{patient}_Aligned.sortedByCoord.out.md.sorted.bam",
-        intervals=config["OUTPUT_FOLDER"]
-        + config["datadirs"]["utils"]
-        + "/"
-        + "coding.interval_list",
+        bai=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["bams"],
+            "{patient}_Aligned.sortedByCoord.out.md.sorted.bam.bai"
+            ),
+        bam=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["bams"],
+            "{patient}_Aligned.sortedByCoord.out.md.sorted.bam"
+        ),
+        intervals=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["utils"],
+            "coding.interval_list"
+        ),
         fasta=config["resources"]["genome"],
     output:
         sbam=temp(
-            config["OUTPUT_FOLDER"]
-            + config["datadirs"]["bams"]
-            + "/"
-            + "{patient}_split.out.bam"
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["bams"],
+                "{patient}_split.out.bam"
+            )
         ),
     params:
         temporary_dir=config["TEMP_DIR"],
@@ -224,10 +245,11 @@ rule SplitNCigarReads:
         time="12:00:00",
         ncpus=4,
     log:
-        config["OUTPUT_FOLDER"]
-        + config["datadirs"]["logs"]["bam_cleaning"]
-        + "/"
-        + "{patient}.log",
+        os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["logs"]["bam_cleaning"],
+            "{patient}.log"
+        ),
     shell:
         """
         gatk --java-options "-Xmx30g -XX:+UseParallelGC -XX:ParallelGCThreads={threads}" SplitNCigarReads -R {input.fasta} -I {input.bam} -O {output.sbam} \

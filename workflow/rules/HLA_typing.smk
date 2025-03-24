@@ -7,45 +7,52 @@ if execution_mode == "full":
             idx=config["resources"]["t1k_file"],
         output:
             temp(
-                config["OUTPUT_FOLDER"]
-                + config["datadirs"]["HLA_typing"]
-                + "/"
-                + "{patient}_aligned_1.fa"
+                os.path.join(
+                    config["OUTPUT_FOLDER"],
+                    config["datadirs"]["HLA_typing"],
+                    "{patient}_aligned_1.fa"
+                )
             ),
             temp(
-                config["OUTPUT_FOLDER"]
-                + config["datadirs"]["HLA_typing"]
-                + "/"
-                + "{patient}_aligned_2.fa"
+                os.path.join(
+                    config["OUTPUT_FOLDER"],
+                    config["datadirs"]["HLA_typing"],
+                    "{patient}_aligned_2.fa"
+                )
             ),
             temp(
-                config["OUTPUT_FOLDER"]
-                + config["datadirs"]["HLA_typing"]
-                + "/"
-                + "{patient}_allele.tsv"
+                os.path.join(
+                    config["OUTPUT_FOLDER"],
+                    config["datadirs"]["HLA_typing"],
+                    "{patient}_allele.tsv"
+                )
             ),
             temp(
-                config["OUTPUT_FOLDER"]
-                + config["datadirs"]["HLA_typing"]
-                + "/"
-                + "{patient}_allele.vcf"
+                os.path.join(
+                    config["OUTPUT_FOLDER"],
+                    config["datadirs"]["HLA_typing"],
+                    "{patient}_allele.vcf"
+                )
             ),
             temp(
-                config["OUTPUT_FOLDER"]
-                + config["datadirs"]["HLA_typing"]
-                + "/"
-                + "{patient}_candidate_1.fq"
+                os.path.join(
+                    config["OUTPUT_FOLDER"],
+                    config["datadirs"]["HLA_typing"],
+                    "{patient}_candidate_1.fq"
+                )
             ),
             temp(
-                config["OUTPUT_FOLDER"]
-                + config["datadirs"]["HLA_typing"]
-                + "/"
-                + "{patient}_candidate_2.fq"
+                os.path.join(
+                    config["OUTPUT_FOLDER"],
+                    config["datadirs"]["HLA_typing"],
+                    "{patient}_candidate_2.fq"
+                )
             ),
-            hla = config["OUTPUT_FOLDER"]
-            + config["datadirs"]["HLA_typing"]
-            + "/"
-            + "{patient}_genotype.tsv",
+            hla=os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["HLA_typing"],
+                "{patient}_genotype.tsv"
+            ),
         params:
             prefix="{patient}",
             outdir=lambda w, output: os.path.dirname(os.path.abspath(output.hla)),
@@ -57,10 +64,11 @@ if execution_mode == "full":
             ncpus=4,
             mem="32G",
         log:
-            config["OUTPUT_FOLDER"] 
-            + config["datadirs"]["logs"]["t1k"] 
-            + "/" 
-            + "{patient}.log",
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["logs"]["t1k"],
+                "{patient}.log"
+            ),
         shell:
             """
             run-t1k -1 {input.r1} -2 {input.r2} --preset hla \
@@ -73,14 +81,16 @@ elif execution_mode == "reduced":
             gtf=config["resources"]["gtf"],
             idx=config["params"]["t1k"]["dat_file"],
         output:
-            coords_dna=config["OUTPUT_FOLDER"]
-                + config["datadirs"]["HLA_typing"]
-                + "/"
-                "_dna_coord.fa",
-            coords_rna=config["OUTPUT_FOLDER"]
-                + config["datadirs"]["HLA_typing"]
-                + "/"
-                "_rna_coord.fa",
+            coords_dna=os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["HLA_typing"],
+                "_dna_coord.fa"
+            ),
+            coords_rna=os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["HLA_typing"],
+                "_rna_coord.fa"
+            ),
         params:
             outdir=lambda w, output: os.path.dirname(os.path.abspath(output.coords_rna)),
         container:
@@ -90,10 +100,11 @@ elif execution_mode == "reduced":
             ncpus=4,
             mem="10G",
         log:
-            config["OUTPUT_FOLDER"] 
-            + config["datadirs"]["logs"]["t1k"] 
-            + "/" 
-            + "coords.log",
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["logs"]["t1k"],
+                "coords.log"
+            ),
         shell:
             """
             t1k-build.pl -f {input.genome} \
@@ -105,51 +116,59 @@ elif execution_mode == "reduced":
         input:
             unpack(get_bam),
             idx=config["resources"]["t1k_file"],
-            coords=config["OUTPUT_FOLDER"]
-                + config["datadirs"]["HLA_typing"]
-                + "/"
-                "_rna_coord.fa",
+            coords=os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["HLA_typing"],
+                "_rna_coord.fa"
+            ),
         output:
             temp(
-                config["OUTPUT_FOLDER"]
-                + config["datadirs"]["HLA_typing"]
-                + "/"
-                + "{patient}_aligned_1.fa"
+                os.path.join(
+                    config["OUTPUT_FOLDER"],
+                    config["datadirs"]["HLA_typing"],
+                    "{patient}_aligned_1.fa"
+                )
             ),
             temp(
-                config["OUTPUT_FOLDER"]
-                + config["datadirs"]["HLA_typing"]
-                + "/"
-                + "{patient}_aligned_2.fa"
+                os.path.join(
+                    config["OUTPUT_FOLDER"],
+                    config["datadirs"]["HLA_typing"],
+                    "{patient}_aligned_2.fa"
+                )
             ),
             temp(
-                config["OUTPUT_FOLDER"]
-                + config["datadirs"]["HLA_typing"]
-                + "/"
-                + "{patient}_allele.tsv"
+                os.path.join(
+                    config["OUTPUT_FOLDER"],
+                    config["datadirs"]["HLA_typing"],
+                    "{patient}_allele.tsv"
+                )
             ),
             temp(
-                config["OUTPUT_FOLDER"]
-                + config["datadirs"]["HLA_typing"]
-                + "/"
-                + "{patient}_allele.vcf"
+                os.path.join(
+                    config["OUTPUT_FOLDER"],
+                    config["datadirs"]["HLA_typing"],
+                    "{patient}_allele.vcf"
+                )
             ),
             temp(
-                config["OUTPUT_FOLDER"]
-                + config["datadirs"]["HLA_typing"]
-                + "/"
-                + "{patient}_candidate_1.fq"
+                os.path.join(
+                    config["OUTPUT_FOLDER"],
+                    config["datadirs"]["HLA_typing"],
+                    "{patient}_candidate_1.fq"
+                )
             ),
             temp(
-                config["OUTPUT_FOLDER"]
-                + config["datadirs"]["HLA_typing"]
-                + "/"
-                + "{patient}_candidate_2.fq"
+                os.path.join(
+                    config["OUTPUT_FOLDER"],
+                    config["datadirs"]["HLA_typing"],
+                    "{patient}_candidate_2.fq"
+                )
             ),
-            hla = config["OUTPUT_FOLDER"]
-            + config["datadirs"]["HLA_typing"]
-            + "/"
-            + "{patient}_genotype.tsv",
+            hla=os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["HLA_typing"],
+                "{patient}_genotype.tsv"
+            ),
         params:
             prefix="{patient}",
             outdir=lambda w, output: os.path.dirname(os.path.abspath(output.hla)),
@@ -161,10 +180,11 @@ elif execution_mode == "reduced":
             ncpus=4,
             mem="32G",
         log:
-            config["OUTPUT_FOLDER"] 
-            + config["datadirs"]["logs"]["t1k"] 
-            + "/" 
-            + "{patient}.log",
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["logs"]["t1k"],
+                "{patient}.log"
+            ),
         shell:
             """
             run-t1k -b {input.bam} --preset hla \
@@ -173,28 +193,31 @@ elif execution_mode == "reduced":
             --od {params.outdir} 
             """
 
-rule extract_hla:
-    input:
-        genotype=config["OUTPUT_FOLDER"]
-        + config["datadirs"]["HLA_typing"]
-        + "/"
-        + "{patient}_genotype.tsv",
-        hla_script=config["resources"]["hla_script"],
-    output:
-        config["OUTPUT_FOLDER"]
-        + config["datadirs"]["HLA_typing"]
-        + "/"
-        + "{patient}_allele_input_pvacseq.csv",
-    container:
-        "docker://danilotat/eneo"
-    log:
-        config["OUTPUT_FOLDER"] 
-        + config["datadirs"]["logs"]["t1k"]
-        + "/"
-        + "{patient}_hla.log",
-    resources:
-        time="0:20:00",
-        ncpus=2,
-        mem="8G",
-    shell:
-        "python3 {input.hla_script} {input.genotype} > {output}"
+    rule extract_hla:
+        input:
+            genotype=os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["HLA_typing"],
+                "{patient}_genotype.tsv"
+            ),
+            hla_script=config["resources"]["hla_script"],
+        output:
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["HLA_typing"],
+                "{patient}_allele_input_pvacseq.csv"
+            ),
+        container:
+            "docker://danilotat/eneo"
+        log:
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["logs"]["t1k"],
+                "{patient}_hla.log"
+            ),
+        resources:
+            time="0:20:00",
+            ncpus=2,
+            mem="8G",
+        shell:
+            "python3 {input.hla_script} {input.genotype} > {output}"

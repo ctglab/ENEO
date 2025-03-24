@@ -4,28 +4,28 @@ import os
 rule vcfanno:
     input:
         toml_file=config["OUTPUT_FOLDER"] + "vcfanno.toml",
-        vcf=config["OUTPUT_FOLDER"]
-        + config["datadirs"]["VCF_out"]
-        + "/"
-        + "{patient}_workflow"
-        + "/"
-        + "results"
-        + "/"
-        + "variants"
-        + "/"
-        + "variants.vcf.gz",
+        vcf=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["VCF_out"],
+            "{patient}_workflow",
+            "results",
+            "variants",
+            "variants.vcf.gz"
+        ),
     output:
         vcf=temp(
-            config["OUTPUT_FOLDER"]
-            + config["datadirs"]["VCF_out"]
-            + "/"
-            + "{patient}_annot.vcf.gz"
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["VCF_out"],
+                "{patient}_annot.vcf.gz"
+            )
         ),
         index=temp(
-            config["OUTPUT_FOLDER"]
-            + config["datadirs"]["VCF_out"]
-            + "/"
-            + "{patient}_annot.vcf.gz.tbi"
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["VCF_out"],
+                "{patient}_annot.vcf.gz.tbi"
+            )
         ),
     params:
         vcfanno_binary=config["params"]["vcfanno"]["vcfanno_binary"],
@@ -33,10 +33,11 @@ rule vcfanno:
         lua=config["params"]["vcfanno"]["vcfanno_lua"],
     threads: config["params"]["vcfanno"]["threads"]
     log:
-        config["OUTPUT_FOLDER"]
-        + config["datadirs"]["logs"]["annotate_variants"]
-        + "/"
-        + "{patient}_vcfanno.log",
+        os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["logs"]["annotate_variants"],
+            "{patient}_vcfanno.log"
+        ),
     resources:
         time="1:00:00",
         ncpus=4,
@@ -53,32 +54,36 @@ rule vcfanno:
 
 rule filtercalls:
     input:
-        vcf=config["OUTPUT_FOLDER"]
-        + config["datadirs"]["VCF_out"]
-        + "/"
-        + "{patient}_annot.vcf.gz",
+        vcf=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["VCF_out"],
+            "{patient}_annot.vcf.gz"
+        ),
         giab_intervals=config["resources"]["giab_intervals"],
     output:
         vcf=temp(
-            config["OUTPUT_FOLDER"]
-            + config["datadirs"]["VCF_out"]
-            + "/"
-            + "{patient}_DP_filt.vcf.gz"
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["VCF_out"],
+                "{patient}_DP_filt.vcf.gz"
+            )
         ),
         index=temp(
-            config["OUTPUT_FOLDER"]
-            + config["datadirs"]["VCF_out"]
-            + "/"
-            + "{patient}_DP_filt.vcf.gz.tbi"
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["VCF_out"],
+                "{patient}_DP_filt.vcf.gz.tbi"
+            )
         ),
     container:
         "docker://danilotat/eneo"
     threads: config["params"]["samtools"]["threads"]
     log:
-        config["OUTPUT_FOLDER"]
-        + config["datadirs"]["logs"]["annotate_variants"]
-        + "/"
-        + "{patient}_bcftools.log",
+        os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["logs"]["annotate_variants"],
+            "{patient}_bcftools.log"
+        ),
     resources:
         time="0:20:00",
         ncpus=2,
@@ -98,14 +103,18 @@ rule createTOML:
         toml_template=config["params"]["vcfanno"]["vcfanno_toml"],
         toml_script=config["params"]["vcfanno"]["toml_script"],
     output:
-        toml_file=config["OUTPUT_FOLDER"] + "vcfanno.toml",
+        toml_file=os.path.join(
+            config["OUTPUT_FOLDER"],
+            "vcfanno.toml"
+        ),
     container:
         "docker://danilotat/eneo"
     log:
-        config["OUTPUT_FOLDER"]
-        + config["datadirs"]["logs"]["annotate_variants"]
-        + "/"
-        + "toml.log",
+        os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["logs"]["annotate_variants"],
+            "toml.log"
+        ),
     resources:
         time="0:20:00",
         ncpus=1,
@@ -118,27 +127,30 @@ rule createTOML:
 
 rule germProb:
     input:
-        vcf=config["OUTPUT_FOLDER"]
-        + config["datadirs"]["VCF_out"]
-        + "/"
-        + "{patient}_DP_filt.vcf.gz",
-        index=config["OUTPUT_FOLDER"]
-        + config["datadirs"]["VCF_out"]
-        + "/"
-        + "{patient}_DP_filt.vcf.gz.tbi",
+        vcf=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["VCF_out"],
+            "{patient}_DP_filt.vcf.gz"
+        ),
+        index=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["VCF_out"],
+            "{patient}_DP_filt.vcf.gz.tbi"
+        ),
         script=germProb_script,
     output:
-        vcf=config["OUTPUT_FOLDER"]
-        + config["datadirs"]["VCF_out"]
-        + "/"
-        + "{patient}_annot_germProb.vcf.gz",
-    container:
-        "docker://danilotat/eneo"
+        vcf=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["VCF_out"],
+            "{patient}_annot_germProb.vcf.gz"
+        ),
+    container: "docker://danilotat/eneo"
     log:
-        config["OUTPUT_FOLDER"]
-        + config["datadirs"]["logs"]["annotate_variants"]
-        + "/"
-        + "{patient}_germprob.log",
+        os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["logs"]["annotate_variants"],
+            "{patient}_germprob.log"
+        ),
     resources:
         time="0:20:00",
         ncpus=1,
@@ -151,22 +163,25 @@ rule germProb:
 
 rule indexgermProb:
     input:
-        vcf=config["OUTPUT_FOLDER"]
-        + config["datadirs"]["VCF_out"]
-        + "/"
-        + "{patient}_annot_germProb.vcf.gz",
+        vcf=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["VCF_out"],
+            "{patient}_annot_germProb.vcf.gz"
+        ),
     output:
-        index=config["OUTPUT_FOLDER"]
-        + config["datadirs"]["VCF_out"]
-        + "/"
-        + "{patient}_annot_germProb.vcf.gz.tbi",
+        index=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["VCF_out"],
+            "{patient}_annot_germProb.vcf.gz.tbi"
+        ),
     container:
         "docker://danilotat/eneo"
     log:
-        config["OUTPUT_FOLDER"]
-        + config["datadirs"]["logs"]["annotate_variants"]
-        + "/"
-        + "{patient}_idxgermProb.log",
+        os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["logs"]["annotate_variants"],
+            "{patient}_idxgermProb.log"
+        ),
     resources:
         time="0:20:00",
         ncpus=1,

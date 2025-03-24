@@ -8,9 +8,7 @@ rule star_index:
     container:
         "docker://danilotat/eneo"
     log:
-        config["datadirs"]["logs"]["star_idx"]
-        + "/"
-        + "star_idx.log",
+        os.path.join(config["datadirs"]["logs"]["star_idx"], "star_idx.log"),
     resources:
         mem="60G",
         ncpus=8,
@@ -26,14 +24,9 @@ rule salmon_gentrome:
         genome=config["resources"]["genome"],
         cdna=config["resources"]["transcriptome"],
     output:
-        temp(
-            config["datadirs"]["salmon_idx"] 
-            + "/" 
-            + "gentrome.fa.gz"),
+        temp(os.path.join(config["datadirs"]["salmon_idx"], "gentrome.fa.gz")),
     log:
-        config["datadirs"]["logs"]["salmon_quant"] 
-        + "/" 
-        + "gentrome.log",
+        os.path.join(config["datadirs"]["logs"]["salmon_quant"], "gentrome.log"),
     conda:
         "../envs/salmon_new.yml"
     shell:
@@ -42,13 +35,9 @@ rule salmon_gentrome:
 
 rule salmon_idx:
     input:
-        gentrome=config["datadirs"]["salmon_idx"] 
-        + "/" 
-        + "gentrome.fa.gz",
+        gentrome=os.path.join(config["datadirs"]["salmon_idx"], "gentrome.fa.gz"),
     output:
-        out=config["datadirs"]["salmon_idx"] 
-        + "/" 
-        + "ctable.bin",
+        out=os.path.join(config["datadirs"]["salmon_idx"], "ctable.bin"),
     threads: config["params"]["salmon"]["threads"]
     params:
         outdir=lambda w, output: os.path.dirname(os.path.abspath(output.out)),
@@ -60,9 +49,7 @@ rule salmon_idx:
     conda:
         "../envs/salmon_new.yml"
     log:
-        config["datadirs"]["logs"]["salmon_quant"] 
-        + "/"
-        + "index.log",
+        os.path.join(config["datadirs"]["logs"]["salmon_quant"], "index.log"),
     shell:
         """
         salmon index -t {input.gentrome} -i {params.outdir} \

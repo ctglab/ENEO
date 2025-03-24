@@ -6,10 +6,11 @@ rule align:
         index=config["datadirs"]["index_folder"],
     output:
         bam=temp(
-            config["OUTPUT_FOLDER"]
-            + config["datadirs"]["mapped_reads"]
-            + "/"
-            + "{patient}_Aligned.out.bam"
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["mapped_reads"],
+                "{patient}_Aligned.out.bam"
+            )
         ),
     container:
         "docker://danilotat/eneo"
@@ -25,10 +26,11 @@ rule align:
         time="16:00:00",
         ncpus=4,
     log:
-        config["OUTPUT_FOLDER"]
-        + config["datadirs"]["logs"]["align"]
-        + "/"
-        + "{patient}.log",
+        os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["logs"]["align"],
+            "{patient}.log"
+        ),
     shell:
         """
         STAR --readFilesIn {input.r1} {input.r2} \
@@ -39,16 +41,18 @@ rule align:
 
 rule sortAlign:
     input:
-        config["OUTPUT_FOLDER"]
-        + config["datadirs"]["mapped_reads"]
-        + "/"
-        + "{patient}_Aligned.out.bam",
+        os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["mapped_reads"],
+            "{patient}_Aligned.out.bam"
+        ),
     output:
         temp(
-            config["OUTPUT_FOLDER"]
-            + config["datadirs"]["mapped_reads"]
-            + "/"
-            + "{patient}_Aligned.sortedByCoord.out.bam"
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["mapped_reads"],
+                "{patient}_Aligned.sortedByCoord.out.bam"
+            )
         ),
     container:
         "docker://danilotat/eneo"    
@@ -58,10 +62,11 @@ rule sortAlign:
         time="2:00:00",
         ncpus=2,
     log:
-        config["OUTPUT_FOLDER"]
-        + config["datadirs"]["logs"]["sort_bam"]
-        + "/"
-        + "{patient}.log",
+        os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["logs"]["sort_bam"],
+            "{patient}.log"
+        ),
     shell:
         """
         samtools sort -@ {threads} -o {output} {input}
@@ -70,16 +75,18 @@ rule sortAlign:
 
 rule indexSortAligned:
     input:
-        config["OUTPUT_FOLDER"]
-        + config["datadirs"]["mapped_reads"]
-        + "/"
-        + "{patient}_Aligned.sortedByCoord.out.bam",
+        os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["mapped_reads"],
+            "{patient}_Aligned.sortedByCoord.out.bam"
+        ),
     output:
         temp(
-            config["OUTPUT_FOLDER"]
-            + config["datadirs"]["mapped_reads"]
-            + "/"
-            + "{patient}_Aligned.sortedByCoord.out.bam.bai"
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["mapped_reads"],
+                "{patient}_Aligned.sortedByCoord.out.bam.bai"
+            )
         ),
     container:
         "docker://danilotat/eneo"
@@ -89,10 +96,11 @@ rule indexSortAligned:
         time="1:00:00",
         ncpus=2,
     log:
-        config["OUTPUT_FOLDER"]
-        + config["datadirs"]["logs"]["sort_bam"]
-        + "/"
-        + "{patient}.log",
+        os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["logs"]["sort_bam"],
+            "{patient}.log"
+        ),
     shell:
         """
         samtools index -@ {threads} {input}

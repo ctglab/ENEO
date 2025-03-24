@@ -1,18 +1,20 @@
 rule BQSR_1:
     input:
-        bam=config["OUTPUT_FOLDER"]
-        + config["datadirs"]["bams"]
-        + "/"
-        + "{patient}_split.out.bam",
+        bam=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["bams"],
+            "{patient}_split.out.bam"
+        ),
         GSNPs=config["resources"]["gsnps"],
         indel=config["resources"]["indel"],
         DbSNP=config["resources"]["dbsnps"],
         fasta=config["resources"]["genome"],
     output:
-        recall=config["OUTPUT_FOLDER"]
-        + config["datadirs"]["bams"]
-        + "/"
-        + "{patient}_recal.table",
+        recall=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["bams"],
+            "{patient}_recal.table"
+        ),
     resources:
         time="6:00:00",
         ncpus=4,
@@ -21,10 +23,11 @@ rule BQSR_1:
     container:
         "docker://danilotat/eneo"
     log:
-        config["OUTPUT_FOLDER"]
-        + config["datadirs"]["logs"]["base_recalibration"]
-        + "/"
-        + "{patient}.log",
+        os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["logs"]["base_recalibration"],
+            "{patient}.log"
+        ),
     shell:
         """
         gatk BaseRecalibrator \
@@ -38,20 +41,25 @@ rule BQSR_1:
 
 rule applyBQSR:
     input:
-        bam=config["OUTPUT_FOLDER"]
-        + config["datadirs"]["bams"]
-        + "/"
-        + "{patient}_split.out.bam",
+        bam=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["bams"],
+            "{patient}_split.out.bam"
+        ),
         fasta=config["resources"]["genome"],
-        recall=config["OUTPUT_FOLDER"]
-        + config["datadirs"]["bams"]
-        + "/"
-        + "{patient}_recal.table",
+        recall=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["bams"],
+            "{patient}_recal.table"
+        ),
     output:
-        rbam=temp(config["OUTPUT_FOLDER"]
-        + config["datadirs"]["BQSR"]
-        + "/"
-        + "{patient}_recal.bam"),
+        rbam=temp(
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["BQSR"],
+                "{patient}_recal.bam"
+                ),
+        )
     threads: config["params"]["BQSR"]["threads"]
     container:
         "docker://danilotat/eneo"
@@ -60,10 +68,11 @@ rule applyBQSR:
         ncpus=4,
         mem="32G",
     log:
-        config["OUTPUT_FOLDER"]
-        + config["datadirs"]["logs"]["base_recalibration"]
-        + "/"
-        + "{patient}.log",
+        os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["logs"]["base_recalibration"],
+            "{patient}.log"
+        ),
     shell:
         """
         gatk ApplyBQSR \
@@ -75,20 +84,23 @@ rule applyBQSR:
 
 rule compressBam:
     input:
-        bam=config["OUTPUT_FOLDER"]
-        + config["datadirs"]["BQSR"]
-        + "/"
-        + "{patient}_recal.bam",
+        bam=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["BQSR"],
+            "{patient}_recal.bam"
+        ),
         reference=config["resources"]["genome"],
     output:
-        cram=config["OUTPUT_FOLDER"]
-        + config["datadirs"]["BQSR"]
-        + "/"
-        + "{patient}_recal.cram",
-        index=config["OUTPUT_FOLDER"]
-        + config["datadirs"]["BQSR"]
-        + "/"
-        + "{patient}_recal.cram.crai",
+        cram=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["BQSR"],
+            "{patient}_recal.cram"
+        ),
+        index=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["BQSR"],
+            "{patient}_recal.cram.crai"
+        ),
     threads: config["params"]["samtools"]["threads"],
     container:
         "docker://danilotat/eneo"
@@ -97,10 +109,11 @@ rule compressBam:
         ncpus=4,
         mem="32G",
     log:
-        config["OUTPUT_FOLDER"]
-        + config["datadirs"]["logs"]["base_recalibration"]
-        + "/"
-        + "{patient}.log",
+        os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["logs"]["base_recalibration"],
+            "{patient}.log"
+        ),
     shell:
         """
         samtools view -T {input.reference} -C -o {output.cram} {input.bam}

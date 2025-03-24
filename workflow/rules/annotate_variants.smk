@@ -3,22 +3,27 @@ import os
 
 rule annotate_variants:
     input:
-        vcf=config["OUTPUT_FOLDER"]
-        + config["datadirs"]["VCF_out"]
-        + "/"
-        + "{patient}_annot_germProb.vcf.gz",
-        vcf_idx=config["OUTPUT_FOLDER"]
-        + config["datadirs"]["VCF_out"]
-        + "/"
-        + "{patient}_annot_germProb.vcf.gz.tbi",
+        vcf=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["VCF_out"],
+            "{patient}_annot_germProb.vcf.gz"
+        ),
+        vcf_idx=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["VCF_out"],
+            "{patient}_annot_germProb.vcf.gz.tbi"
+        ),
         plugin_wt=config["params"]["vep"]["extra"]["plugins"]["Wildtype"],
         plugin_fs=config["params"]["vep"]["extra"]["plugins"]["Frameshift"],
         cache=config["resources"]["vep_cache"],
     output:
-        vcfout=temp(config["OUTPUT_FOLDER"]
-        + config["datadirs"]["VCF_out"]
-        + "/"
-        + "{patient}.annotated.vcf"),
+        vcfout=temp(
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["VCF_out"],
+                "{patient}.annotated.vcf"
+                )
+        ),
     params:
         assembly=config["params"]["vep"]["extra"]["assembly"],
         filtering=config["params"]["vep"]["extra"]["filtering"],
@@ -30,10 +35,11 @@ rule annotate_variants:
         time="2:00:00",
         ncpus=2,
     log:
-        config["OUTPUT_FOLDER"]
-        + config["datadirs"]["logs"]["annotate_variants"]
-        + "/"
-        + "{patient}.log",
+        os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["logs"]["annotate_variants"],
+            "{patient}.log"
+        ),
     shell:
         """ 
         vep --input_file {input.vcf} \
@@ -49,19 +55,22 @@ rule annotate_variants:
 
 rule compress_annotated_vcf:
     input:
-        config["OUTPUT_FOLDER"]
-        + config["datadirs"]["VCF_out"]
-        + "/"
-        + "{patient}.annotated.vcf",
+        os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["VCF_out"],
+            "{patient}.annotated.vcf"
+        ),
     output:
-        vcf=config["OUTPUT_FOLDER"]
-        + config["datadirs"]["VCF_out"]
-        + "/"
-        + "{patient}.vep.vcf.gz",
-        vcf_idx=config["OUTPUT_FOLDER"]
-        + config["datadirs"]["VCF_out"]
-        + "/"
-        + "{patient}.vep.vcf.gz.tbi",
+        vcf=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["VCF_out"],
+            "{patient}.vep.vcf.gz"
+        ),
+        vcf_idx=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["VCF_out"],
+            "{patient}.vep.vcf.gz.tbi"
+        ),
     container:
         "docker://danilotat/eneo",
     resources:
@@ -69,10 +78,11 @@ rule compress_annotated_vcf:
         time="1:00:00",
         ncpus=2,
     log:
-        config["OUTPUT_FOLDER"]
-        + config["datadirs"]["logs"]["annotate_variants"]
-        + "/"
-        + "{patient}_compress.log",
+        os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["logs"]["annotate_variants"],
+            "{patient}_compress.log"
+        ),
     shell:
         """
         bgzip -c {input} > {output.vcf}

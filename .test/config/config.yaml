@@ -1,14 +1,12 @@
 # This is a config file intended to be used just for CI testing
+execution_mode: "full"
 OUTPUT_FOLDER: ENEO_output/
 TEMP_DIR: temp_gatk
 datadirs:
-  BQSR: BQSR
-  HLA_typing: HLA_typing
-  VCF: VCF
-  VCF_germ: VCF_germ
-  VCF_out: VCF_out
   bams: bams
+  BQSR: BQSR
   expression: expression_data
+  HLA_typing: HLA_typing
   index_folder: genome_index
   logs:
     align: log/align
@@ -33,84 +31,81 @@ datadirs:
   trimmed_reads: trimmed_reads
   trimming_report: fastp_report
   utils: utils
+  VCF: VCF
+  VCF_out: VCF_out
 params:
   BQSR:
     RAM: 30000
-    extra: ''
-    threads: 4
-  MarkDuplicates:
-    RAM: 30000
-    extra: ''
-    threads: 4
-  STAR:
-    RAM: null
-    extra: '--twopassMode Basic --outSAMtype BAM Unsorted --readFilesCommand zcat '
-    threads: 12
-  SplitNCigarReads:
-    RAM: 30000
-    extra: ''
     threads: 4
   gatk:
     RAM: 20
     extra:
       RGPU: unit1
       RGSM: 20
+  MarkDuplicates:
+    RAM: 30000
+    threads: 4
   pMHC:
     threads: 4
-  pvacseq:
-    RAM: null
-    extra: null
-    threads: 2
+    netmhcpan_launcher_script: workflow/scripts/netmhcpan_launcher.py
+    calibration_frame: workflow/supplementary_res/optimal_percentile_netmhcpan.csv
+    hla_ligand_atlas: workflow/supplementary_res/HLA_ligand_atlas.tsv.gz
+    filter_peptides_script: workflow/scripts/filter_peptides.py
+    min_length: 8
+    max_length: 12
+    germProb: 0.5
   salmon:
     RAM: null
     extra:
       extra: --gcBias --seqBias --reduceGCMemory
-      index: --keep-duplicates
+      index: -k 31
       libtype: A
       zip_ext: gz
     threads: 8
   samtools:
-    RAM: null
-    extra: ''
     threads: 4
-  strelka2:
+  SplitNCigarReads:
+    RAM: 30000
+    threads: 4
+  STAR:
     RAM: null
-    extra: null
+    extra: '--twopassMode Basic --outSAMtype BAM Unsorted --readFilesCommand zcat '
+    threads: 12
+  strelka2:
     threads: 8
   t1k:
-    RAM: null
-    extra: null
     threads: 8
+    dat_file: ../workflow/supplementary_res/hla.dat
   vcfanno:
-    RAM: null
-    extra: null
     threads: 8
+    toml_script: ../workflow/scripts/createTOML.py
+    vcfanno_binary: ../workflow/utils/vcfanno_linux64
+    vcfanno_lua: ../workflow/utils/custom.lua
+    vcfanno_toml: ../workflow/utils/vcfanno.toml
   vep:
-    RAM: null
     extra:
       assembly: GRCh38
       filtering: --gencode_basic --coding_only --no_intergenic
       plugins:
         Frameshift: ../workflow/utils/vep_plugins/Frameshift.pm
         Wildtype: ../workflow/utils/vep_plugins/Wildtype.pm
-    threads: null
 resources:
-  cosmic: test_data/cosmic_chr6.vcf.gz
+  cosmic: "test_data/cosmic_chr6.vcf.gz"
   dbsnps: "test_data/dbsnpALFA_chr6.vcf.gz"
   genome: "test_data/genome_chr6.fa.gz"
-  germline_prob_script: ../workflow/scripts/germProb.py
-  giab_intervals: ../workflow/supplementary_res/GRCh38_giab_merged.bed.gz
+  germline_prob_script: "../workflow/scripts/germProb.py"
+  giab_intervals: "../workflow/supplementary_res/GRCh38_giab_merged.bed.gz"
   gnomad: "test_data/gnomad_chr6.vcf.gz"
   gsnps: "test_data/1000G_snsp_chr6.vcf.gz"
   gtf: "test_data/chr6_105.gtf"
-  hla_script: ../workflow/scripts/HLA_typing.py
+  hla_script: "../workflow/scripts/HLA_typing.py"
   indel: "test_data/indels_chr6.vcf.gz"
   intervals_coding: test_data/exons_target.BED.gz
   REDI: "test_data/REDI_chr6.BED.gz"
-  t1k_file: ../workflow/supplementary_res/hlaidx_rna_seq.fa
-  toml_script: ../workflow/scripts/createTOML.py
+  t1k_file: "../workflow/supplementary_res/hlaidx_rna_seq.fa"
+  toml_script: "../workflow/scripts/createTOML.py"
   transcriptome: "test_data/chr6_cdna.fa.gz"
-  vcfanno_binary: ../workflow/utils/vcfanno_linux64
-  vcfanno_lua: ../workflow/utils/custom.lua
-  vcfanno_toml: ../workflow/utils/vcfanno.toml
+  vcfanno_binary: "../workflow/utils/vcfanno_linux64"
+  vcfanno_lua: "../workflow/utils/custom.lua"
+  vcfanno_toml: "../workflow/utils/vcfanno.toml"
 slurm_log_dir: slurm-logs

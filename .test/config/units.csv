@@ -1,2 +1,2 @@
 patient,fq1,fq2
-NCI_4077,test_data/SRR9697628_1.fastq.gz,test_data/SRR9697628_2.fastq.gz
+PT_25,test_data/pat25_1.fastq.gz,test_data/pat25_2.fastq.gz

@@ -24,6 +24,8 @@ rule Strelka_prep:
         ),
     container:
         "docker://danilotat/strelka2",
+    conda:
+        "../envs/strelka2.yml"
     log:
         os.path.join(
             config["OUTPUT_FOLDER"],
@@ -71,6 +73,8 @@ rule Strelka2:
         threads=config["params"]["strelka2"]["threads"],
     container:
         "docker://danilotat/strelka2",
+    conda:
+        "../envs/strelka2.yml"
     log:
         os.path.join(
             config["OUTPUT_FOLDER"],

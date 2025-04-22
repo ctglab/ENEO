@@ -30,6 +30,8 @@ rule annotate_variants:
         plugin_dir=lambda wc, input: os.path.dirname(input.plugin_wt),
     container:
         "docker://danilotat/eneo",
+    conda:
+        "../envs/vep.yml",
     resources:
         mem="6G",
         time="2:00:00",
@@ -73,6 +75,8 @@ rule compress_annotated_vcf:
         ),
     container:
         "docker://danilotat/eneo",
+    conda:
+        "../envs/vep.yml",
     resources:
         mem="6G",
         time="1:00:00",

@@ -58,6 +58,8 @@ if execution_mode == "full":
             outdir=lambda w, output: os.path.dirname(os.path.abspath(output.hla)),
         container:
             "docker://danilotat/eneo"
+        conda:
+            "../envs/t1k.yml"
         threads: config["params"]["t1k"]["threads"]
         resources:
             time="4:00:00",
@@ -95,6 +97,8 @@ elif execution_mode == "reduced":
             outdir=lambda w, output: os.path.dirname(os.path.abspath(output.coords_rna)),
         container:
             "docker://danilotat/eneo",
+        conda:
+            "../envs/t1k.yml",
         resources:
             time="2:00:00",
             ncpus=4,
@@ -172,6 +176,8 @@ elif execution_mode == "reduced":
         params:
             prefix="{patient}",
             outdir=lambda w, output: os.path.dirname(os.path.abspath(output.hla)),
+        container:
+            "docker://danilotat/eneo"
         conda:
             "../envs/t1k.yml"
         threads: config["params"]["t1k"]["threads"]
@@ -193,31 +199,33 @@ elif execution_mode == "reduced":
             --od {params.outdir} 
             """
 
-    rule extract_hla:
-        input:
-            genotype=os.path.join(
-                config["OUTPUT_FOLDER"],
-                config["datadirs"]["HLA_typing"],
-                "{patient}_genotype.tsv"
-            ),
-            hla_script=config["resources"]["hla_script"],
-        output:
-            os.path.join(
-                config["OUTPUT_FOLDER"],
-                config["datadirs"]["HLA_typing"],
-                "{patient}_allele_input_pvacseq.csv"
-            ),
-        container:
-            "docker://danilotat/eneo"
-        log:
-            os.path.join(
-                config["OUTPUT_FOLDER"],
-                config["datadirs"]["logs"]["t1k"],
-                "{patient}_hla.log"
-            ),
-        resources:
-            time="0:20:00",
-            ncpus=2,
-            mem="8G",
-        shell:
-            "python3 {input.hla_script} {input.genotype} > {output}"
+rule extract_hla:
+    input:
+        genotype=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["HLA_typing"],
+            "{patient}_genotype.tsv"
+        ),
+        hla_script=config["resources"]["hla_script"],
+    output:
+        os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["HLA_typing"],
+            "{patient}_allele_input_pvacseq.csv"
+        ),
+    container:
+        "docker://danilotat/eneo"
+    conda:
+        "../envs/cyvcf2.yml"
+    log:
+        os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["logs"]["t1k"],
+            "{patient}_hla.log"
+        ),
+    resources:
+        time="0:20:00",
+        ncpus=2,
+        mem="8G",
+    shell:
+        "python3 {input.hla_script} {input.genotype} > {output}"

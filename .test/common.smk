@@ -1,4 +1,4 @@
-# This is a common rule file intended to be used just for 
+# This is a common rule file intended to be used just for
 # Github CI testing
 
 import pandas as pd
@@ -8,14 +8,16 @@ from snakemake.utils import min_version
 
 min_version("5.9.1")
 
+
 configfile: "config/config.yaml"
+
 
 configpath = "config/config.yaml"
 
 patients = pd.read_csv("config/patients.csv")["patient"]
 units = pd.read_csv("config/units.csv").set_index(["patient"], drop=False)
 units = units.sort_index()
-
+execution_mode = config["execution_mode"]
 slurm_logdir = config["slurm_log_dir"]
 logpath = Path(slurm_logdir)
 logpath.mkdir(parents=True, exist_ok=True)
@@ -31,6 +33,7 @@ num_workers = 20
 
 READ = ["1", "2"]
 
+
 wildcard_constraints:
     patient="|".join(patients),
 
@@ -42,6 +45,7 @@ def sample_from_patient(df, patient_list, condition):
             df[(df.phenotype == condition) & (df.subject_id == x)].Sample.values[0]
         )
     return samples
+
 
 def get_fastq(wildcards):
     """Return a dict where keys are read1/2 and values are list of files"""

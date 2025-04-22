@@ -5,8 +5,12 @@ rule star_index:
     output:
         directory(config["datadirs"]["index_folder"]),
     threads: config["params"]["STAR"]["threads"]
+    params:
+        uncompressed=lambda w, input: input[0].replace(".gz",""),
     container:
         "docker://danilotat/eneo"
+    conda:
+        "../envs/star.yml"
     log:
         os.path.join(config["datadirs"]["logs"]["star_idx"], "star_idx.log"),
     resources:
@@ -15,8 +19,9 @@ rule star_index:
         time="6:00:00",
     shell:
         """
+        gzip -d -c {input.fasta} > {params.uncompressed}
         STAR --runMode genomeGenerate --runThreadN {threads} --genomeDir {output} \
-        --genomeFastaFiles {input.fasta} --sjdbOverhang 100 --sjdbGTFfile {input.gtf}"""
+        --genomeFastaFiles {params.uncompressed} --sjdbOverhang 100 --sjdbGTFfile {input.gtf}"""
 
 
 rule salmon_gentrome:
@@ -24,13 +29,19 @@ rule salmon_gentrome:
         genome=config["resources"]["genome"],
         cdna=config["resources"]["transcriptome"],
     output:
-        temp(os.path.join(config["datadirs"]["salmon_idx"], "gentrome.fa.gz")),
+        gentrome=temp(
+            os.path.join(config["datadirs"]["salmon_idx"], "gentrome.fa.gz")
+        ),
     log:
         os.path.join(config["datadirs"]["logs"]["salmon_quant"], "gentrome.log"),
+    container:
+        "docker://danilotat/eneo"
     conda:
-        "../envs/salmon_new.yml"
+        "../envs/salmon.yml"
     shell:
-        "cat {input.genome} {input.cdna} | gzip > {output}"
+        """
+        cat {input.genome} {input.cdna} > {output.gentrome}
+        """
 
 
 rule salmon_idx:
@@ -46,12 +57,13 @@ rule salmon_idx:
         mem="40G",
         ncpus=8,
         time="4:00:00",
+    container:
+        "docker://combinelab/salmon"
     conda:
-        "../envs/salmon_new.yml"
+        "../envs/salmon.yml"
     log:
         os.path.join(config["datadirs"]["logs"]["salmon_quant"], "index.log"),
     shell:
         """
-        salmon index -t {input.gentrome} -i {params.outdir} \
-        --decoys {input.decoys} {params.extra}
+        salmon index -t {input.gentrome} -i {params.outdir} {params.extra}
         """

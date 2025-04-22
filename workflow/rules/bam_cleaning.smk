@@ -14,6 +14,8 @@ if execution_mode == "full":
                     "{patient}_Aligned.sortedByCoord.out.rg.bam"
                 )
             ),
+        container:
+            "docker://danilotat/eneo"
         conda:
             "../envs/gatk.yml"
         params:
@@ -49,6 +51,8 @@ elif execution_mode == "reduced":
             ),
         container:  
             "docker://danilotat/eneo"
+        conda:
+            "../envs/gatk.yml"
         params:
             RGPU="{patient}",
             RGSM="{patient}",
@@ -81,6 +85,8 @@ rule bed_to_intervals:
         ),
     container:
         "docker://danilotat/eneo"
+    conda:
+        "../envs/gatk.yml"
     resources:
         time="1:00:00",
         ncpus=2,
@@ -123,6 +129,8 @@ rule mark_duplicates:
         temporary_dir=config["TEMP_DIR"],
     container:
         "docker://danilotat/eneo"
+    conda:
+        "../envs/gatk.yml"
     threads: config["params"]["MarkDuplicates"]["threads"]
     resources:
         mem="32G",
@@ -160,6 +168,8 @@ rule sort_bam_gatk:
         ),
     container:
         "docker://danilotat/eneo"
+    conda:
+        "../envs/samtools.yml"
     resources:
         time="2:00:00",
         ncpus=2,
@@ -193,6 +203,8 @@ rule samtools_index:
         ),
     container:
         "docker://danilotat/eneo"
+    conda:
+        "../envs/samtools.yml"
     resources:
         time="1:00:00",
         ncpus=2,
@@ -240,6 +252,8 @@ rule SplitNCigarReads:
     threads: config["params"]["SplitNCigarReads"]["threads"]
     container:
         "docker://danilotat/eneo"
+    conda:
+        "../envs/gatk.yml"
     resources:
         mem="32G",
         time="12:00:00",

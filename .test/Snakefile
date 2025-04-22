@@ -1,6 +1,6 @@
 # This is a slightly reduced Snakefile intended to be used for Github CI
-# where the creation of the Docker container to be used for VEP and 
-# pMHC prediction is not going to be working because of Actions policy. 
+# where the creation of the Docker container to be used for VEP and
+# pMHC prediction is not going to be working because of Actions policy.
 
 
 import glob
@@ -12,18 +12,37 @@ from collections import Counter
 
 configfile: "config/config.yaml"
 
+
 include: "common.smk"
 
 
 rule targets:
     input:
         expand(
-            config["OUTPUT_FOLDER"]
-            + config["datadirs"]["VCF_out"]
-            + "/"
-            + "{patient}_annot_germProb.vcf.gz.tbi",
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["VCF_out"],
+                "{patient}_annot_germProb.vcf.gz.tbi",
+            ),
             patient=patients,
         ),
+        expand(
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["expression"],
+                "transcript_expression.tsv",
+            ),
+            patient=patients,
+        ),
+        expand(
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["HLA_typing"],
+                "{patient}_allele_input_pvacseq.csv",
+            ),
+            patient=patients,
+        ),
+
 
 include: "../workflow/rules/index.smk"
 include: "../workflow/rules/alignment.smk"

@@ -44,6 +44,8 @@ rule vcfanno:
         mem="16G",
     container:
         "docker://danilotat/eneo"
+    conda:
+        "../envs/vep.yml"
     shell:
         """
         {params.vcfanno_binary} -lua {params.lua} -p {threads} {params.extra} {input.toml_file} {input.vcf} |\
@@ -77,6 +79,8 @@ rule filtercalls:
         ),
     container:
         "docker://danilotat/eneo"
+    conda:
+        "../envs/samtools.yml"
     threads: config["params"]["samtools"]["threads"]
     log:
         os.path.join(
@@ -109,6 +113,8 @@ rule createTOML:
         ),
     container:
         "docker://danilotat/eneo"
+    conda:
+        "../envs/cyvcf2.yml"
     log:
         os.path.join(
             config["OUTPUT_FOLDER"],
@@ -145,6 +151,8 @@ rule germProb:
             "{patient}_annot_germProb.vcf.gz"
         ),
     container: "docker://danilotat/eneo"
+    conda:
+        "../envs/cyvcf2.yml"
     log:
         os.path.join(
             config["OUTPUT_FOLDER"],
@@ -176,6 +184,8 @@ rule indexgermProb:
         ),
     container:
         "docker://danilotat/eneo"
+    conda:
+        "../envs/vep.yml"
     log:
         os.path.join(
             config["OUTPUT_FOLDER"],

@@ -1,0 +1,47 @@
+name: salmon
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - _libgcc_mutex=0.1=conda_forge
+  - _openmp_mutex=4.5=2_gnu
+  - boost-cpp=1.85.0=h3c6214e_4
+  - bzip2=1.0.8=h4bc722e_7
+  - c-ares=1.34.4=hb9d3cd8_0
+  - ca-certificates=2025.1.31=hbcca054_0
+  - icu=75.1=he02047a_0
+  - keyutils=1.6.1=h166bdaf_0
+  - krb5=1.21.3=h659f571_0
+  - libboost=1.85.0=h0ccab89_4
+  - libboost-devel=1.85.0=h00ab1b0_4
+  - libboost-headers=1.85.0=ha770c72_4
+  - libcurl=8.12.1=h332b0f4_0
+  - libdeflate=1.22=hb9d3cd8_0
+  - libedit=3.1.20250104=pl5321h7949ede_0
+  - libev=4.33=hd590300_2
+  - libgcc=14.2.0=h767d61c_2
+  - libgcc-ng=14.2.0=h69a702a_2
+  - libgff=2.0.0=h077b44d_2
+  - libgomp=14.2.0=h767d61c_2
+  - libhwloc=2.11.2=default_h0d58e46_1001
+  - libiconv=1.18=h4ce23a2_1
+  - libjemalloc=5.3.0=h5888daf_1
+  - liblzma=5.6.4=hb9d3cd8_0
+  - liblzma-devel=5.6.4=hb9d3cd8_0
+  - libnghttp2=1.64.0=h161d5f1_0
+  - libssh2=1.11.1=hf672d98_0
+  - libstdcxx=14.2.0=h8f9b012_2
+  - libstdcxx-ng=14.2.0=h4852527_2
+  - libxml2=2.13.6=h8d12d68_0
+  - libzlib=1.3.1=hb9d3cd8_2
+  - ncurses=6.5=h2d0b736_3
+  - openssl=3.4.1=h7b32b05_0
+  - salmon=1.10.3=h45fbf2d_4
+  - staden_io_lib=1.15.0=hfc9290b_4
+  - tbb=2022.0.0=hceb3a55_0
+  - xz=5.6.4=hbcc6ac9_0
+  - xz-gpl-tools=5.6.4=hbcc6ac9_0
+  - xz-tools=5.6.4=hb9d3cd8_0
+  - zstd=1.5.7=hb8e6e7a_2
+prefix: /CTGlab/home/danilo/miniconda3/envs/salmon

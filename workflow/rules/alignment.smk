@@ -14,6 +14,8 @@ rule align:
         ),
     container:
         "docker://danilotat/eneo"
+    conda:
+        "../envs/star.yml"
     params:
         index=lambda wc, input: input.index,
         prefix=lambda wc, output: os.path.join(os.path.dirname(os.path.abspath(output.bam)), f"{wc.patient}_"),
@@ -55,7 +57,9 @@ rule sortAlign:
             )
         ),
     container:
-        "docker://danilotat/eneo"    
+        "docker://danilotat/eneo"
+    conda:
+        "../envs/samtools.yml" 
     threads: config["params"]["samtools"]["threads"]
     resources:
         mem="10G",
@@ -90,6 +94,8 @@ rule indexSortAligned:
         ),
     container:
         "docker://danilotat/eneo"
+    conda:
+        "../envs/samtools.yml"
     threads: config["params"]["samtools"]["threads"]
     resources:
         mem="10G",

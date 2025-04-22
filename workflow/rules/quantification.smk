@@ -26,8 +26,10 @@ rule salmon_quantification:
         time="1:00:00",
         ncpus=4,
         mem="32G",
+    container:
+        "docker://combinelab/salmon"
     conda:
-        "../envs/salmon_new.yml"
+        "../envs/salmon.yml"
     log:
         os.path.join(
             config["OUTPUT_FOLDER"],
@@ -51,8 +53,7 @@ rule export_quantification:
             ),
             patient=patients,
         ),
-        idx=os.path.join(config["datadirs"]["salmon_idx"], "ctable.bin"),
-        index=lambda wc, input: os.path.dirname(os.path.abspath(input.index)),
+        index=os.path.join(config["datadirs"]["salmon_idx"], "ctable.bin"),
         cdna_fasta=config["resources"]["transcriptome"],
         annotation=config["resources"]["gtf"],
     output:
@@ -67,6 +68,7 @@ rule export_quantification:
             "gene_expression.tsv",
         ),
     params:
+        index=lambda w, input: os.path.dirname(os.path.abspath(input.index)),
         outfolder=lambda w, output: os.path.dirname(os.path.abspath(output.gene)),
         patients=expand("{patient}", patient=patients),
     log:

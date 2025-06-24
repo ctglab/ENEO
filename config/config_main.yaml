@@ -1,21 +1,12 @@
-# This is the main configuration file for the ENEO pipeline.
-# Here you can set the paths to the input data, the output folder, the resources used by the pipeline, and the parameters for the tools used.
-# For information on how to set up the pipeline, please refer to the documentation available at https://ctglab.github.io/ENEO/
-# If you spot any issues or have any questions, please open an issue on the GitHub repository at
-# https://github.com/ctglab/ENEO/issues
-
-# Execution mode defines the type of execution based on input file type. 
-# If you're going to run the pipeline using aligned .BAM files, set the execution_mode to "reduced".
-# If you're going to run the pipeline using raw .FASTQ files, set the execution_mode to "full".
-# Remember to edit the units.csv file accordingly.
-execution_mode: "reduced"
 OUTPUT_FOLDER: /../ENEO_output/
 TEMP_DIR: /../ENEO_temp/
 datadirs:
-  bams: bams
   BQSR: BQSR
-  expression: expression_data
   HLA_typing: HLA_typing
+  VCF: VCF
+  VCF_out: VCF_out
+  bams: bams
+  expression: expression_data
   index_folder: genome_index
   logs:
     align: log/align
@@ -40,10 +31,19 @@ datadirs:
   trimmed_reads: trimmed_reads
   trimming_report: fastp_report
   utils: utils
-  VCF: VCF
-  VCF_out: VCF_out
+execution_mode: full
 params:
   BQSR:
+    RAM: 30000
+    threads: 4
+  MarkDuplicates:
+    RAM: 30000
+    threads: 4
+  STAR:
+    RAM: null
+    extra: '--twopassMode Basic --outSAMtype BAM Unsorted --readFilesCommand zcat '
+    threads: 12
+  SplitNCigarReads:
     RAM: 30000
     threads: 4
   gatk:
@@ -51,18 +51,15 @@ params:
     extra:
       RGPU: unit1
       RGSM: 20
-  MarkDuplicates:
-    RAM: 30000
-    threads: 4
   pMHC:
-    threads: 4
-    netmhcpan_launcher_script: workflow/scripts/netmhcpan_launcher.py
     calibration_frame: workflow/supplementary_res/optimal_percentile_netmhcpan.csv
-    hla_ligand_atlas: workflow/supplementary_res/HLA_ligand_atlas.tsv.gz
     filter_peptides_script: workflow/scripts/filter_peptides.py
-    min_length: 8
-    max_length: 12
     germProb: 0.5
+    hla_ligand_atlas: workflow/supplementary_res/HLA_ligand_atlas.tsv.gz
+    max_length: 12
+    min_length: 8
+    netmhcpan_launcher_script: workflow/scripts/netmhcpan_launcher.py
+    threads: 4
   salmon:
     RAM: null
     extra:
@@ -73,18 +70,11 @@ params:
     threads: 8
   samtools:
     threads: 4
-  SplitNCigarReads:
-    RAM: 30000
-    threads: 4
-  STAR:
-    RAM: null
-    extra: '--twopassMode Basic --outSAMtype BAM Unsorted --readFilesCommand zcat '
-    threads: 12
   strelka2:
     threads: 8
   t1k:
-    threads: 8
     dat_file: workflow/supplementary_res/hla.dat
+    threads: 8
   vcfanno:
     threads: 8
     toml_script: workflow/scripts/createTOML.py
@@ -94,13 +84,12 @@ params:
   vep:
     extra:
       assembly: GRCh38
-      filtering: --gencode_basic --coding_only --no_intergenic
+      filtering: --gencode_basic --pick --af --check_existing --coding_only --format vcf --vcf --symbol --terms SO --no_intergenic --tsl
       plugins:
         Frameshift: workflow/utils/vep_plugins/Frameshift.pm
         Wildtype: workflow/utils/vep_plugins/Wildtype.pm
 resources:
   REDI: /path/to/REDI_portal.BED.gz
-  cosmic: /path/to/cosmic.vcf.gz
   dbsnps: /path/to/freq_withAF.vcf.gz
   genome: /path/to/GRCh38.p14.genome.fa
   germline_prob_script: workflow/scripts/germProb.py
@@ -114,5 +103,5 @@ resources:
   t1k_file: workflow/supplementary_res/hlaidx_rna_seq.fa
   toml_script: workflow/scripts/createTOML.py
   transcriptome: /path/to/gencode.v47.transcripts.fa.gz
-  vep_cache: /g100_scratch/userexternal/dtatoni0/repos/ENEO_res
+  vep_cache: /path/to/homo_sapiens_vep_105_GRCh38
 slurm_log_dir: slurm-logs

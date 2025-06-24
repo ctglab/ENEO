@@ -109,6 +109,7 @@ dependencies:
     - pytz==2024.2
     - pyyaml==6.0.2
     - requests==2.32.3
+    - rich==14.0.0
     - six==1.16.0
     - tzdata==2024.2
     - urllib3==2.2.3

@@ -1,295 +1,198 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
-# This is an update of the legacy downloader, where we're moving into using the
-# Gencode notation instead of the Ensembl one, to reduce the amount of conversions
-# needed throughout the process.
-
-import yaml
-import pandas as pd
 import os
-import subprocess
 import sys
+import yaml
 import json
-import subprocess
-import cyvcf2
 import argparse
+import logging
+import subprocess
+from pathlib import Path
+import pandas as pd
+from rich.logging import RichHandler
 
-cwd = os.path.abspath(__file__)
+# Setup logging
+logging.basicConfig(
+    level="DEBUG",
+    format="%(message)s",
+    datefmt="[%Y-%m-%d %H:%M:%S]",
+    handlers=[RichHandler(markup=False, rich_tracebacks=True)]
+)
+cwd = Path(__file__).parent
+config_folder = cwd.parent / "config"
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description="Downloader script using Gencode notation.")
-    parser.add_argument('-c', '--config', type=str, required=True, help='Path to the configuration file.')
-    parser.add_argument('-r', '--resources', type=str, required=True, help='Path to the resources directory.')
-    parser.add_argument('-o', '--outfolder', type=str, required=True, help='Path to the output folder.')
+    parser = argparse.ArgumentParser(description="Download and setup ENEO resources.")
+    parser.add_argument("-c", "--config", type=str, default=config_folder / "config_main.yaml", help="Path to config.")
+    parser.add_argument("-r", "--resources", type=str, default=cwd / "resources.json", help="Path to resources JSON.")
+    parser.add_argument("-o", "--outfolder", type=str, required=True, help="Output folder.")
+    parser.add_argument("--dry-run", action="store_true", help="Only simulate.")
     return parser.parse_args()
 
-class ChromosomeConverter(object):
+
+def read_yaml(path):
+    with open(path) as f:
+        data = yaml.load(f, Loader=yaml.FullLoader)
+    for key in ["OUTPUT_FOLDER", "TEMP_DIR"]:
+        if not data.get(key):
+            logging.warning(f"{key} is not set in the configuration.")
+    return data
+
+
+def read_json(path):
+    with open(path) as f:
+        return json.load(f)
+
+def update_yaml(conf, res_name, path):
+    if res_name not in conf.get("resources", {}):
+        logging.error(f"{res_name} not in config.")
+        sys.exit(1)
+
+    logging.info(f"Updating config: {res_name}")
+    conf["resources"][res_name] = path
+    return conf
+
+def run_command(cmd, shell=False):
+    logging.debug(f"Running command: {cmd}")
+    subprocess.run(cmd, check=True, shell=shell)
+
+def download_resource(entry, outfolder, dry=False):
+    filename = entry["url"].split("/")[-1]
+    dest = os.path.join(outfolder, filename)
+    if not os.path.isfile(dest):
+        logging.info(f"Downloading {filename}")
+        if not dry:
+            run_command(["wget", "-c", entry["url"], "-P", outfolder])
+    else:
+        logging.info(f"{filename} already exists.")
+    return dest
+
+
+def decompress_file(path):
+    if path.endswith((".gtf.gz", ".fasta.gz", ".fa.gz")):
+        target = path.replace(".gz", "")
+        if not os.path.isfile(target):
+            logging.info(f"Decompressing {path}")
+            run_command(["gzip", "-d", path])
+        return target
+    if path.endswith(".tar.gz"):
+        target_dir = path.replace(".tar.gz", "")
+        if not os.path.isdir(target_dir):
+            os.makedirs(target_dir, exist_ok=True)
+            logging.info(f"Extracting archive {path}")
+            run_command(["tar", "-xzvf", path, "-C", target_dir])
+        return target_dir
+    return path
+
+
+def convert_notations(vcf_url, conv_from, conv_to, outfolder):
+    vcf_path = os.path.join(outfolder, vcf_url.split('/')[-1])
+    if os.path.exists(os.path.join(outfolder, vcf_path)):
+        logging.info(f"{vcf_path} already exists. Skipping conversion.")
+        return vcf_path
+    if "vcf" not in vcf_url:
+        raise ValueError("Only VCF files supported.")
+    if conv_from.lower() != "refseq" or conv_to.lower() != "gencode":
+        raise NotImplementedError("Only refseq -> gencode is supported.")
+    conv_df = pd.read_csv(
+        "http://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/chromAlias.txt.gz",
+        sep="\t",
+        compression="gzip",
+        header=None,
+        names=["source", "target", "source_type"]
+    )
+    mapping = conv_df[conv_df["source_type"] == "refseq"][["source", "target"]]
+    mapping_file = os.path.join(outfolder, "refseq_dbsnp.tsv")
+    mapping.to_csv(mapping_file, sep="\t", index=False, header=False)
+    out_vcf = os.path.join(outfolder, os.path.basename(vcf_path))
+    run_command(
+        f"bcftools annotate --rename-chrs {mapping_file} {vcf_url} | bcftools sort -Oz -o {out_vcf}",
+        shell=True)
+    run_command(["tabix", "-p", "vcf", out_vcf])
+    return out_vcf
+
+def generate_allele_frequency(input_vcf, output_vcf):
+    logging.info(f"Adding allele frequency to {input_vcf}")
+    tags = "'INFO/AN:1=int(smpl_sum(AN))','INFO/AC:1=int(smpl_sum(AC))','INFO/AF:1=float(AC/AN)'"
+    run_command(f"bcftools +fill-tags {input_vcf} -Oz -o {output_vcf} -- -t {tags}", shell=True)
+    run_command(["tabix", "-p", "vcf", output_vcf])
+    return output_vcf
+
+def create_sequence_dictionary(fasta_file):
     """
-    Basic class to control for chromosome notation and performing chromosome conversion
-    based on the Ensembl notation.
+    Create index and sequence dictionary for a FASTA file using samtools 
     """
-
-    def __init__(self) -> None:
-        self.conv_table = self._get_table()
-        self.possibilities = ["ensembl", "ucsc", "refseq"]
-
-    def _get_table(self):
-        original_conv = pd.read_csv(
-            "http://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/chromAlias.txt.gz",
-            compression="gzip",
-            sep="\t",
-            header=None,
-            names=["source", "target", "source_type"],
-        )
-        return original_conv
-
-    @staticmethod
-    def infer_notation_vcf(self, vcf_url: str):
-        cmd0 = f'bcftools view {vcf_url} | grep -v "#" | head -n 1 | cut -f1'
-        chromosome_notation = subprocess.run(
-            [cmd0], shell=True, stdout=subprocess.PIPE, encoding="utf-8"
-        ).stdout.strip()
-        try:
-            inferred_not = self.conv_table.loc[
-                self.conv_table["source"] == str(chromosome_notation)
-            ]["source_type"].unique()[0]
-            return inferred_not
-        except IndexError:
-            if chromosome_notation == "chr1":
-                return "ucsc"
-            else:
-                raise NotImplementedError(
-                    f"The chromosome {chromosome_notation} in unknown, and only homo sapiens is supported."
-                )
-
-    def generate_conv_file(self, chr_from: str, outfile=None):
-        """
-        Generate a simple TSV for chromosomes to move from a source notation to the Genbank one.
-
-        Arguments:
-        ------------
-        chr_from: str
-            Chromosome notation to move from. Accepted values are ["assembly", "ensembl", "genbank", "refseq"]
-
-        """
-        if chr_from.lower() not in ["ensembl", "assembly", "genbank", "refseq"]:
-            raise ValueError(
-                f"{chr_from} must be a choice between {', '.join(['ensembl', 'assembly', 'genbank', 'refseq'])}"
-            )
-        if outfile is None:
-            outfile = os.path.join(os.path.dirname(
-                cwd), f"{chr_from}_to_gencode.tsv")
-        subset = self.conv_table.loc[
-            self.conv_table["source_type"].str.contains(chr_from.lower())
-        ]
-        subset.loc[:, ["source", "target"]].to_csv(
-            outfile, sep="\t", index=False, header=False
-        )
-
-    def convert_REDI(self, bed_url: str, bed_output: str, drop_intermediate=True):
-        """
-        Contrarly to the legacy method, this will just turn the file as a regular BED
-        to be used for annotation
-        """
-        redi_df = pd.read_csv(
-            bed_url, compression="gzip", sep="\t", usecols=[i for i in range(0, 9)]
-        )
-        # make it as a true BED, so converting with both start-end
-        redi_df["Start"] = redi_df["Position"] - 1
-        redi_df["End"] = redi_df["Start"] + 1
-        redi_df = redi_df.loc[
-            :,
-            ["Region", "Start", "End"]
-            + [
-                x
-                for x in redi_df.columns
-                if x not in ["Region", "Position", "Start", "End"]
-            ],
-        ]
-        redi_df.loc[
-            :, ["Region"] + [x for x in redi_df.columns if x != "Region"]
-        ].to_csv(bed_output, index=False, header=False, sep="\t")
-        # sort & compress + index
-        cmd0 = f"sort -k1,1 -k2,2n -k3,3n {bed_output} | bgzip -c > {bed_output+'.gz'}"
-        subprocess.run([cmd0], shell=True)
-        subprocess.run(["tabix", "-p", "bed", bed_output + ".gz"])
-        if drop_intermediate:
-            os.remove(bed_output)
-
-
-class ResourceEntry(object):
-    """
-    This object handles the reading of the config file, check if file is present or
-    has to be downloaded. If a conversion has to be done, it will be performed.
-    Then it updates the relative configuration file accordingly.
-    """
-
-    def __init__(
-        self, conf_file: dict, resources_entry: dict, res_name: str, outfolder: str
-    ):
-        self.conf_file = conf_file
-        self.resources_entry = resources_entry
-        self.res_name = res_name
-        self.main_filename = self._get_main_filename()
-        self.outfolder = outfolder
-        self.downloaded = self._is_downloaded()
-        self.res_type = self._get_restype()
-        assert res_name in conf_file["resources"].keys()
-
-    def _get_main_filename(self):
-        return self.resources_entry["url"].split("/")[-1]
-
-    def _get_restype(self):
-        try:
-            filetype = self.resources_entry["filetype"]
-            return filetype
-        except KeyError:
-            print(
-                f"Malformed entry for {self.res_name}. Check the resource file")
-
-    def _is_downloaded(self):
-        if os.path.isfile(os.path.join(self.outfolder, self.main_filename)):
-            return True
+    dict_file = fasta_file.replace(".fa", ".dict").replace(".fasta", ".dict")
+    index_file = fasta_file + ".fai"
+    for file in [dict_file, index_file]:
+        if os.path.isfile(file):
+            logging.info(f"{file} already exists. Skipping creation.")
         else:
-            return False
-
-    def _download_stuff(self):
-        if not self.downloaded:
-            print(f"Downloading {self.res_name}")
-            subprocess.run(
-                ["wget", "-c", self.resources_entry["url"], "-P", self.outfolder]
-            )
-            self.downloaded = True
-        else:
-            print(f"{self.res_name} already downloaded.")
-            pass
-
-    def generate_allele_frequency(self):
-        """
-        This function edits the dbSNP VCF to generate three distinct INFO fields
-        - AN: Alleles number
-        - AC: Alleles count
-        - AF: Alleles frequency
-        """
-        vcf_out = os.path.join(self.outfolder, self.main_filename.replace('.vcf.gz', '_withAF.vcf.gz'))
-        fill_string = "'INFO/AN:1=int(smpl_sum(AN))','INFO/AC:1=int(smpl_sum(AC))','INFO/AF:1=float(AC/AN)'"
-        cmd1 = f"bcftools fill-tags {os.path.join(self.outfolder, self.main_filename)} -Oz -o {vcf_out} -- -t {fill_string}"
-        subprocess.run([cmd1], shell=True)
-        subprocess.run(["tabix", "-p", "vcf", vcf_out])
-        # now update the main filename
-        self.main_filename = vcf_out.split("/")[-1]
-
-def update_yaml(conf_main: str, resources: str, outfolder: str):
-    """
-    This function does:
-        - Reads configuration and resources file
-        - Download stuff if needed
-        - Update YAML accordingly
-    """
-    with open(conf_main, "r") as conf_main_yaml:
-        conf_main_yaml = yaml.load(conf_main_yaml, Loader=yaml.FullLoader)
-    resources = json.load(open(resources, "r"))
-    for res_name in conf_main_yaml["resources"]:
-        # first ensure that the file is not present.
-        if not os.path.isfile(conf_main_yaml["resources"][res_name]):
-            if not res_name in resources.keys():
-                print(f"Unable to find the URL for {res_name}. Download it manually like in the documentation")
-                continue
+            logging.info(f"Creating index for {fasta_file}")
+            if file == index_file:
+                run_command(["samtools", "faidx", fasta_file])
             else:
-                # download regularly
-                resource_entry = ResourceEntry(
-                    conf_file=conf_main_yaml,
-                    resources_entry=resources[res_name],
-                    res_name=res_name,
-                    outfolder=outfolder,
-            )
-            if resource_entry.res_type in ["fasta", "gtf"]:
-                resource_entry._download_stuff()
-                # if it's a genome, do also the dictionary
-                if "genome" in resource_entry.main_filename:
-                    # decompress the genome, as STAR doesn't like gzipped fasta
-                    subprocess.run(
-                        [
-                        'gunzip',
-                        os.path.join(outfolder, resource_entry.main_filename)
-                        ]
-                    )
-                    # do the index using samtools
-                    subprocess.run(
-                        [
-                            "samtools",
-                            "faidx",
-                            os.path.join(outfolder, resource_entry.main_filename.replace('.gz', ''))
-                        ]
-                    )
-                    outfile = os.path.join(outfolder, resource_entry.main_filename.replace('.fa.gz', '.dict'))
-                    subprocess.run(
-                        [
-                            'gatk',
-                            'CreateSequenceDictionary',
-                            '-R',
-                            os.path.join(outfolder, resource_entry.main_filename),
-                            '-O',
-                            outfile
-                        ])
-                    # update the main filename
-                    resource_entry.main_filename = resource_entry.main_filename.replace('.fa.gz', '')
-            elif resource_entry.res_name == "dbsnps":
-                print(f"Converting the dbSNP to Gencode notation")
-                # # for dbsnps we need to do conversion and then annotation for allele frequency
-                refseq_conv_table = os.path.join(
-                        os.path.dirname(cwd), "refseq_dbsnp.tsv"
-                    )
-                chr_converter.generate_conv_file(
-                        "refseq", refseq_conv_table
-                    )
-                cmd1 = f"bcftools annotate --rename-chrs {refseq_conv_table} {resource_entry.resources_entry['url']} | bgzip -c > {os.path.join(outfolder, resource_entry.main_filename)}"
-                subprocess.run([cmd1], shell=True)
-                subprocess.run(
-                        [
-                            "tabix",
-                            "-p",
-                            "vcf",
-                            os.path.join(
-                                outfolder, resource_entry.main_filename),
-                        ]
-                    )
-                resource_entry.generate_allele_frequency()
-            elif resource_entry.res_type == "table":
-                # that's the stuff we need to do for the REDI portal file
-                chr_converter.convert_REDI(
-                    bed_url=resource_entry.resources_entry["url"],
-                    bed_output=os.path.join(outfolder, "REDI_portal.BED"),
-                )
-                resource_entry.main_filename = "REDI_portal.BED.gz"
-            elif resource_entry.res_type == "archive":
-                if not os.path.isdir(conf_main_yaml["resources"][res_name]):
-                    # that's for VEP: download and extract
-                    vep_cache_dir = os.path.join(outfolder, "vep_cache")
-                    resource_entry._download_stuff()
-                    subprocess.run(
-                        [
-                            "tar",
-                            "-xzvf",
-                            os.path.join(outfolder, resource_entry.main_filename),
-                            "-C",
-                            os.path.abspath(vep_cache_dir),
-                        ]
-                    )
-                    resource_entry.main_filename = vep_cache_dir
-            # update entry accordingly
-            conf_main_yaml["resources"][res_name] = os.path.join(
-                os.path.abspath(outfolder), resource_entry.main_filename
-            ) 
-    # that's good, now we could write out the YAML
-    with open(conf_main, "w") as conf_main:
-        yaml.dump(conf_main_yaml, conf_main)
+                logging.info(f"Creating sequence dictionary for {fasta_file}")
+                run_command(["samtools", "dict", fasta_file, "-o", dict_file])
+
+def convert_REDI(bed_url, bed_output, drop_intermediate=True):
+    if os.path.isfile(bed_output):
+        logging.info(f"{bed_output} already exists.")
+        return bed_output
+
+    redi_df = pd.read_csv(bed_url, compression="gzip", sep="\t", usecols=range(9))
+    redi_df["Start"] = redi_df["Position"] - 1
+    redi_df["End"] = redi_df["Start"] + 1
+    bed_df = redi_df[["Region", "Start", "End"] + [col for col in redi_df.columns if col not in ["Region", "Position", "Start", "End"]]]
+    bed_df.sort_values(["Region", "Start", "End"], inplace=True)
+    tmp_output = bed_output.replace(".gz", "")
+    bed_df.to_csv(tmp_output, sep="\t", index=False, header=False)
+    run_command(f"cat {tmp_output} | bgzip -c > {bed_output}", shell=True)
+    run_command(["tabix", "-p", "bed", bed_output])
+    if drop_intermediate and os.path.isfile(tmp_output):
+        os.remove(tmp_output)
+    return bed_output
+
+
+def main(args):
+    conf = read_yaml(args.config)
+    resources = read_json(args.resources)
+    outfolder = args.outfolder
+    for name, existing_path in conf.get("resources", {}).items():
+        if name not in resources and not os.path.isfile(existing_path):
+            logging.error(f"{name} missing in resources and not in repo.")
+            continue
+        if os.path.isfile(existing_path):
+            logging.info(f"{name} already exists. Skipping.")
+            continue
+        res_entry = resources.get(name)
+        if not res_entry:
+            continue
+        ftype = res_entry["filetype"].lower()
+        if ftype in {"fasta", "gtf"}:
+            path = decompress_file(download_resource(res_entry, outfolder, args.dry_run))
+            if name == "genome":
+                # create index and sequence dictionary for FASTA
+                create_sequence_dictionary(path)
+        elif ftype == "vcf":
+            if name == "dbsnps":
+                # conversion on-the-fly instead of downloading
+                path = convert_notations(res_entry['url'], "refseq", "gencode", outfolder)
+                path = generate_allele_frequency(path, os.path.join(outfolder, f"{name}_withAF.vcf.gz"))
+            else:
+                path = download_resource(res_entry, outfolder, args.dry_run)
+        elif ftype == "table":
+            path = convert_REDI(res_entry["url"], os.path.join(outfolder, f"{name}.BED.gz"))
+        elif ftype == "archive":
+            path = decompress_file(download_resource(res_entry, outfolder, args.dry_run))
+        else:
+            logging.warning(f"Unknown filetype for {name} as its {ftype}. Skipping.")
+            continue
+        conf = update_yaml(conf, name, path)
+    with open(args.config, "w") as f:
+        yaml.dump(conf, f)
+    logging.info("Updated config written.")
 
 
 if __name__ == "__main__":
-    chr_converter = ChromosomeConverter()
-    args = parse_arguments()
-    # generate table
-    update_yaml(conf_main=args.config,
-                resources=args.resources,
-                outfolder=args.outfolder)
+    main(parse_arguments())

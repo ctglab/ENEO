@@ -18,8 +18,8 @@ git clone https://github.com/ctglab/ENEO.git
 ```
 
 The next step is to setup resources, as reported in the [dedicated section](https://ctglab.github.io/ENEO/resources). 
-Then update the configuration file in `config/config.yaml` following the instructions in the [dedicated section](https://ctglab.github.io/ENEO/setup).
 
+Then update the configuration file in `config/config.yaml` following the instructions in the [dedicated section](https://ctglab.github.io/ENEO/setup).
 
 The next step is to setup patients and their relative sequencing files, defined in the files `units.csv` and `patients.csv`. The pipeline is designed to be executed both from `FASTQ` or already aligned `BAM` files: this different behavior is specified using the `execution_mode` in the main configuration file. Edit then the `units.csv` file to specify the **absolute** path for sequencing files of each patient, accordingly:
 
@@ -38,6 +38,8 @@ The next step is to setup patients and their relative sequencing files, defined 
     Pat_01,/path/to/Pat_01.bam
     Pat_02,/path/to/Pat_02.bam
     ```
+!!! note
+    While running with BAM files save some time in the analysis, here the alignment is performed in Two-Pass mode to generate sample specific junctions. Thus it's suggested to run the pipeline in **full** mode. 
 
 Edit also the `patients.csv` file to add the list of patients to be processed. All the listed patients must match the patients in the `units.csv` file.
 
@@ -49,7 +51,7 @@ Edit also the `patients.csv` file to add the list of patients to be processed. A
 
 ## Executing the pipeline
 
-If you're running the pipeline using an HPC cluster, we provided detailed execution profiles for both SLURM and SGE schedulers under the `workflow/profile` directory and the relative instruction in the [dedicated section](https://ctglab.github.io/ENEO/hpc).
+If you're running the pipeline using an HPC cluster, we provided detailed execution profiles for SLURM schedulers under the `workflow/profile` directory and the relative instruction in the [dedicated section](https://ctglab.github.io/ENEO/hpc).
 
 Alternatively, you can run the pipeline locally, using the following command:
 

@@ -6,10 +6,10 @@ ENEO heavily depends on public genetic databases for germline probability estima
 conda env create -f setup_env.yml 
 ```
 
-Then activate the conda environment, and launch the configuration script as follows, replacing the `resources` folder with .
+Then activate the conda environment, and launch the configuration script as follows, replacing the `path_for_resources` folder with a PATH with at least 60GB of free space and where you have full read/write access.
 
 ```bash
-python3 download_res.py -c ../config/config_main.yaml -r resources.json -o resources  
+python3 download_res.py -o <path_for_resources>  
 ```
 
 !!! note
@@ -17,22 +17,20 @@ python3 download_res.py -c ../config/config_main.yaml -r resources.json -o resou
 
 
 This script will download different resources:
-- genome, transcriptome and GTF from [Gencode](https://www.gencodegenes.org/human/)
+
+- genome from GIAB, the `GRCh38_GIABv3_no_alt_analysis_set_maskedGRC_decoys_MAP2K3_KMT2C_KCNJ18` version. Why? Look [here](https://gist.github.com/brentp/1935e9bada1ea3185fbbc132019a619e). 
+- transcriptome and GTF from [Gencode](https://www.gencodegenes.org/human/)
 - 1000G, ExAC from the GATK resource bundle
-- dbSNPs ALFA 
+- dbSNPs ALFA from NCBI
 - REDI portal
 - VEP cache (v105)
 
-ENEO uses also COSMIC, to further annotate known somatic variants with the relevant COSMIC id. According to the nature of your entity (Commercial or Non-Commercial), please download the cosmic VCF file following the guidelines on the [website](https://cancer.sanger.ac.uk/cosmic/download/cosmic). After downloading, add the PATH of the downloaded VCF into the configuration file (located under `config/config_main.yaml`) 
-
-!!! note
-    If you're not interested in using COSMIC and are not interested in adding this notation, you had to edit the file in `workflow/utils/vcfanno.toml`. In details, you had to remove the lines 31-35 and the lines 43-51
 
 ## What if I already got some of them?
 
 The configuration script works by controlling the existence of the files whose path is written inside the main configuration file `conf_main.yaml`, located in the `config` folder. If any of those files are already in your machine, just edit the configuration file adding the right *absolute* path. The script will check for its presence without re-downloading it.
 
 !!! failure
-    The annotation for files must be concordant throughout the pipeline, to avoid any error. Be sure to add resources manually only if you're sure of their concordance.
+    The annotation for files must be concordant throughout the pipeline, to avoid any error. The chromosome notation in use is the one by Gencode, thus with `chr`. Be sure to add resources manually only if you're sure of their concordance.
 
 

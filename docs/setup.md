@@ -1,4 +1,4 @@
-# Setup the configuration file
+# Workflow Setup 
 
 The pipeline uses the configuration file hosted in the `config` directory, named `config_main.yaml`. It's a YAML file divided into sections, that is actively read by Snakemake to obtain informations about resources, parameters and paths. While we tried to make it as user-friendly as possible, enabling the automatic update during the downloading of the resources (refer to the [Setup resources](https://ctglab.github.io/ENEO/resources) section), some tweaks are required to do manually.
 
@@ -64,7 +64,7 @@ The last three parameters defines the constrains used for the mutated peptide ge
 
 ## Resources
 
-This section contains the paths to the resources used by the pipeline. Most of the resources are downloaded automatically using the script provided in the folder `setup` named `download_res.py`. The path for the downloaded files will be updated automatically (refer to the [Setup resources](https://ctglab.github.io/ENEO/resources) section). You'll had to manually download the file under cosmic parameter from the [cosmic website](https://cancer.sanger.ac.uk/cosmic/download/cosmic) and provide the path to the file in the configuration file.
+This section contains the paths to the resources used by the pipeline. Most of the resources could be downloaded automatically using the script provided in the folder `setup` named `download_res.py`. The path for the downloaded files will be updated automatically (refer to the [Setup resources](https://ctglab.github.io/ENEO/resources) section).
 
 !!! note
     All the paths must be **absolute**. Note that it's generally preferred to keep all the resources in the same folder, but this is not mandatory. The reason is due to the fact that these files must be accessible by the Singularity container, and the paths must be provided as mounting points in the `SINGULARITY_ARGS` parameter when executing the pipeline. If all the files are in the same folder, you can provide the path to the folder, and the pipeline will be able to access all the files.

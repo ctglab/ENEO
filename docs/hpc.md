@@ -1,17 +1,15 @@
 # Run on HPC
 
-ENEO was developed and tested in High Performances Computing (HPC) clusters with the SLURM workload manager. Snakemake deeply changed the job submissions and handling after the major update introduced with the version 8.0.0. Currently more than a single way exists for submitting jobs using Snakemake, but the most effective one seems to be using the `cluster-generic` plugin. 
+ENEO was developed and tested in High Performances Computing (HPC) clusters with the SLURM workload manager. It's strongly suggested to use a recent version of Snakemake (>8.0.0) that works smootly with the slurm executor plugin. 
 
-If you're using Snakemake > 8.0.0, install the cluster-generic plugin using pip
+Install the SLURM executor plugin with
 
 ```
-pip install snakemake-executor-plugin-cluster-generic
+pip install snakemake-executor-plugin-slurm
 ```
 
-Then inside the folder `worflow/profile` you'll find for each of the supported method (SLURM/SGE) two configuration files: one with the string `v8` in the name, used by Snakemake version >8.0.0, and a legacy `config.yaml`, for older versions. 
+Then inside the folder `worflow/profile/slurm` you'll find a configuration file named `config.yaml`, where you should add the details about your SLURM account and desired partition.  
 
-!!! info
-    The following notes reported examples using the legacy config file. However, the relevant edits are the same! 
 
 ## Singularity args
 

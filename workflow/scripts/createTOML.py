@@ -33,8 +33,6 @@ def main(yaml_file, template_file, output_file):
             field['file'] = conf_main['resources']['REDI']
         elif "indel" in field['names'][0]:
             field['file'] = conf_main['resources']['indel']
-        elif "cosmic" in field['names'][0]:
-            field['file'] = conf_main['resources']['cosmic']
         elif "Unmet" in field['names'][0]:
             field['file'] = conf_main['resources']['unmet_bed']
         else:

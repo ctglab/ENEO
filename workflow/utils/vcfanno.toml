@@ -22,24 +22,9 @@ fields=["AN","AC","AF"]
 names=["indels_AN", "indels_AC", "indels_AF"]
 ops=["self", "self", "self"]
 
-[[annotation]]
-file=""
-fields=["ID"]
-names=["cosmic_id"]
-ops=["self"]
-
 [[postannotation]]
 fields=["gnomAD_AC", "gnomAD_AF"]
 name="gnomad_AN"
 op="lua: divfunc(gnomAD_AC, gnomAD_AF)"
 type="Float"
 
-[[postannotation]]
-name="ID"
-fields=["rs_ids","cosmic_id"]
-op="setid"
-type="String"
-
-[[postannotation]]
-fields=["rs_ids","cosmic_id"]
-op="delete"

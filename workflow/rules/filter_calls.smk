@@ -39,7 +39,7 @@ rule vcfanno:
             "{patient}_vcfanno.log"
         ),
     resources:
-        time="1:00:00",
+        runtime="60m",
         ncpus=4,
         mem="16G",
     container:
@@ -89,7 +89,7 @@ rule filtercalls:
             "{patient}_bcftools.log"
         ),
     resources:
-        time="0:20:00",
+        runtime="20m",
         ncpus=2,
         mem="8G",
     shell:
@@ -122,7 +122,7 @@ rule createTOML:
             "toml.log"
         ),
     resources:
-        time="0:20:00",
+        runtime="20m",
         ncpus=1,
         mem="1G",
     shell:
@@ -160,7 +160,7 @@ rule germProb:
             "{patient}_germprob.log"
         ),
     resources:
-        time="0:20:00",
+        runtime="20m",
         ncpus=1,
         mem="4G",
     shell:
@@ -193,7 +193,7 @@ rule indexgermProb:
             "{patient}_idxgermProb.log"
         ),
     resources:
-        time="0:20:00",
+        runtime="20m",
         ncpus=1,
         mem="4G",
     shell:

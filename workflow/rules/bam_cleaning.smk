@@ -25,7 +25,7 @@ if execution_mode == "full":
             extra="--RGLB rg1 --RGPL illumina",
         resources:
             mem="32G",
-            time="4:00:00",
+            runtime="240m",
             ncpus=4,
         log:
             os.path.join(
@@ -60,7 +60,7 @@ elif execution_mode == "reduced":
             extra="--RGLB rg1 --RGPL illumina",
         resources:
             mem="32G",
-            time="4:00:00",
+            runtime="240m",
             ncpus=4,
         log:
             os.path.join(
@@ -88,7 +88,7 @@ rule bed_to_intervals:
     conda:
         "../envs/gatk.yml"
     resources:
-        time="1:00:00",
+        runtime="60m",
         ncpus=2,
         mem="8G",
     log:
@@ -134,7 +134,7 @@ rule mark_duplicates:
     threads: config["params"]["MarkDuplicates"]["threads"]
     resources:
         mem="32G",
-        time="4:00:00",
+        runtime="240m",
         ncpus=4,
     log:
         os.path.join(
@@ -171,7 +171,7 @@ rule sort_bam_gatk:
     conda:
         "../envs/samtools.yml"
     resources:
-        time="2:00:00",
+        runtime="120m",
         ncpus=2,
         mem="8G",
     log:
@@ -206,7 +206,7 @@ rule samtools_index:
     conda:
         "../envs/samtools.yml"
     resources:
-        time="1:00:00",
+        runtime="60m",
         ncpus=2,
         mem="8G",
     log:
@@ -256,7 +256,7 @@ rule SplitNCigarReads:
         "../envs/gatk.yml"
     resources:
         mem="32G",
-        time="12:00:00",
+        runtime="720m",
         ncpus=4,
     log:
         os.path.join(

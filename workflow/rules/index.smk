@@ -16,10 +16,9 @@ rule star_index:
     resources:
         mem="60G",
         ncpus=8,
-        time="6:00:00",
+        runtime="360m",
     shell:
         """
-        gzip -d -c {input.fasta} > {params.uncompressed}
         STAR --runMode genomeGenerate --runThreadN {threads} --genomeDir {output} \
         --genomeFastaFiles {params.uncompressed} --sjdbOverhang 100 --sjdbGTFfile {input.gtf}"""
 
@@ -56,7 +55,7 @@ rule salmon_idx:
     resources:
         mem="40G",
         ncpus=8,
-        time="4:00:00",
+        runtime="240m",
     container:
         "docker://combinelab/salmon"
     conda:

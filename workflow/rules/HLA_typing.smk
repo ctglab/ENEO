@@ -62,7 +62,7 @@ if execution_mode == "full":
             "../envs/t1k.yml"
         threads: config["params"]["t1k"]["threads"]
         resources:
-            time="4:00:00",
+            runtime="240m",
             ncpus=4,
             mem="32G",
         log:
@@ -100,7 +100,7 @@ elif execution_mode == "reduced":
         conda:
             "../envs/t1k.yml",
         resources:
-            time="2:00:00",
+            runtime="120m",
             ncpus=4,
             mem="10G",
         log:
@@ -182,7 +182,7 @@ elif execution_mode == "reduced":
             "../envs/t1k.yml"
         threads: config["params"]["t1k"]["threads"]
         resources:
-            time="4:00:00",
+            runtime="240m",
             ncpus=4,
             mem="32G",
         log:
@@ -224,7 +224,7 @@ rule extract_hla:
             "{patient}_hla.log"
         ),
     resources:
-        time="0:20:00",
+        runtime="20m",
         ncpus=2,
         mem="8G",
     shell:

@@ -33,7 +33,7 @@ rule Strelka_prep:
             "{patient}_strelka_prep.log",
         ),
     resources:
-        time="0:20:00",
+        runtime="20m",
         ncpus=1,
         mem="4G",
     shell:
@@ -82,7 +82,7 @@ rule Strelka2:
             "{patient}_calling.log",
         ),
     resources:
-        time="4:00:00",
+        runtime="240m",
         ncpus=2,
         mem="16G",
     shell:

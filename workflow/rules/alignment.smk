@@ -5,13 +5,11 @@ rule align:
         unpack(get_fastq),
         index=config["datadirs"]["index_folder"],
     output:
-        bam=temp(
-            os.path.join(
+        bam=os.path.join(
                 config["OUTPUT_FOLDER"],
                 config["datadirs"]["mapped_reads"],
                 "{patient}_Aligned.out.bam"
-            )
-        ),
+            ),
     container:
         "docker://danilotat/eneo"
     conda:
@@ -25,7 +23,7 @@ rule align:
     threads: config["params"]["STAR"]["threads"]
     resources:
         mem="60G",
-        time="16:00:00",
+        runtime="960m",
         ncpus=4,
     log:
         os.path.join(
@@ -49,13 +47,11 @@ rule sortAlign:
             "{patient}_Aligned.out.bam"
         ),
     output:
-        temp(
             os.path.join(
                 config["OUTPUT_FOLDER"],
                 config["datadirs"]["mapped_reads"],
                 "{patient}_Aligned.sortedByCoord.out.bam"
-            )
-        ),
+            ),
     container:
         "docker://danilotat/eneo"
     conda:
@@ -63,7 +59,7 @@ rule sortAlign:
     threads: config["params"]["samtools"]["threads"]
     resources:
         mem="10G",
-        time="2:00:00",
+        runtime="120m",
         ncpus=2,
     log:
         os.path.join(
@@ -85,13 +81,11 @@ rule indexSortAligned:
             "{patient}_Aligned.sortedByCoord.out.bam"
         ),
     output:
-        temp(
             os.path.join(
                 config["OUTPUT_FOLDER"],
                 config["datadirs"]["mapped_reads"],
                 "{patient}_Aligned.sortedByCoord.out.bam.bai"
-            )
-        ),
+            ),
     container:
         "docker://danilotat/eneo"
     conda:
@@ -99,7 +93,7 @@ rule indexSortAligned:
     threads: config["params"]["samtools"]["threads"]
     resources:
         mem="10G",
-        time="1:00:00",
+        runtime="60m",
         ncpus=2,
     log:
         os.path.join(

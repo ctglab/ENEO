@@ -34,7 +34,7 @@ rule annotate_variants:
         "../envs/vep.yml",
     resources:
         mem="6G",
-        time="2:00:00",
+        runtime="120m",
         ncpus=2,
     log:
         os.path.join(
@@ -79,7 +79,7 @@ rule compress_annotated_vcf:
         "../envs/vep.yml",
     resources:
         mem="6G",
-        time="1:00:00",
+        runtime="60m",
         ncpus=2,
     log:
         os.path.join(

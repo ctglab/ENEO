@@ -23,7 +23,7 @@ rule salmon_quantification:
         ),
     threads: config["params"]["salmon"]["threads"]
     resources:
-        time="1:00:00",
+        runtime="60m",
         ncpus=4,
         mem="32G",
     container:
@@ -78,7 +78,7 @@ rule export_quantification:
             "export_quantification.log",
         ),
     resources:
-        time="0:30:00",
+        runtime="30m",
         ncpus=2,
         mem="8G",
     conda:

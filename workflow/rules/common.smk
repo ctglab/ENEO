@@ -19,12 +19,12 @@ else:
     raise ValueError(f"The parameter 'execution_mode' must be one of ['bam','fastq'].")
 
 # Load patient info.
-# Note that this dataframe is accessed every time to determine the wildcards used
+# Note that this dataframe is accessed every runtime to determine the wildcards used
 # at each step of the analysis while needed.
 
 configpath = "config/config_main.yaml"
 patients = pd.read_csv("patients.csv")["patient"]
-units = pd.read_csv("units_bam.csv").set_index(["patient"], drop=False)
+units = pd.read_csv("units_fixed.csv").set_index(["patient"], drop=False)
 units = units.sort_index()
 
 slurm_logdir = config["slurm_log_dir"]

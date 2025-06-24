@@ -16,7 +16,7 @@ rule BQSR_1:
             "{patient}_recal.table"
         ),
     resources:
-        time="6:00:00",
+        runtime="360m",
         ncpus=4,
         mem="32G",
     threads: config["params"]["BQSR"]["threads"]
@@ -68,7 +68,7 @@ rule applyBQSR:
     conda:
         "../envs/gatk.yml"
     resources:
-        time="6:00:00",
+        runtime="360m",
         ncpus=4,
         mem="32G",
     log:
@@ -111,7 +111,7 @@ rule compressBam:
     conda:
         "../envs/samtools.yml"
     resources:
-        time="2:00:00",
+        runtime="120m",
         ncpus=4,
         mem="32G",
     log:

@@ -17,7 +17,7 @@ rule pMHCpeptides:
     log:
         os.path.join(config["OUTPUT_FOLDER"], config["datadirs"]["logs"]["pMHC"], "{patient}.log"),
     resources:
-        time="2:00:00",
+        runtime="120m",
         ncpus=4,
         mem="8G",
         tmpdir=config["TEMP_DIR"],
@@ -41,7 +41,7 @@ rule filter_peptides:
     log:
         os.path.join(config["OUTPUT_FOLDER"], config["datadirs"]["logs"]["pMHC"], "{patient}_filt.log"),
     resources:
-        time="1:00:00",
+        runtime="60m",
         ncpus=2,
         mem="2G",
     container:

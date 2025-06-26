@@ -63,6 +63,10 @@ def download_resource(entry, outfolder, dry=False):
         logging.info(f"Downloading {filename}")
         if not dry:
             run_command(["wget", "-c", entry["url"], "-P", outfolder])
+            if entry["url"].endswith('vcf.gz'):
+                # download also the index
+                index_url = entry["url"] + ".tbi"
+                run_command(["wget", "-c", index_url, "-P", outfolder])
     else:
         logging.info(f"{filename} already exists.")
     return dest

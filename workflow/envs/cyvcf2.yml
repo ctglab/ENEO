@@ -53,6 +53,6 @@ dependencies:
     - numpy==1.26.3
     - pyyaml==6.0.1
     - scipy==1.12.0
+    - bionumpy
     - toml==0.10.2
     - pandas
-prefix: /g100/home/userexternal/dtatoni0/.conda/envs/vcfedit

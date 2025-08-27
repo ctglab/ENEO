@@ -145,11 +145,12 @@ rule germProb:
         ),
         script=germProb_script,
     output:
-        vcf=os.path.join(
+        vcf=temp(
+            os.path.join(
             config["OUTPUT_FOLDER"],
             config["datadirs"]["VCF_out"],
             "{patient}_annot_germProb.vcf.gz"
-        ),
+        )),
     container: "docker://danilotat/eneo"
     conda:
         "../envs/cyvcf2.yml"
@@ -177,11 +178,11 @@ rule indexgermProb:
             "{patient}_annot_germProb.vcf.gz"
         ),
     output:
-        index=os.path.join(
+        index=temp(os.path.join(
             config["OUTPUT_FOLDER"],
             config["datadirs"]["VCF_out"],
             "{patient}_annot_germProb.vcf.gz.tbi"
-        ),
+        )),
     container:
         "docker://danilotat/eneo"
     conda:

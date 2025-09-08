@@ -15,7 +15,12 @@ rule annotate_variants:
         ),
         plugin_wt=config["params"]["vep"]["extra"]["plugins"]["Wildtype"],
         plugin_fs=config["params"]["vep"]["extra"]["plugins"]["Frameshift"],
-        cache=config["resources"]["vep_cache"],
+        # branching for do annotation online in CI mode. 
+        cache=branch(
+            config['execution_mode'] == 'CI',
+            then="",
+            otherwise=config["resources"]["vep_cache"],
+        ),
     output:
         vcfout=temp(
             os.path.join(
@@ -27,6 +32,11 @@ rule annotate_variants:
     params:
         assembly=config["params"]["vep"]["extra"]["assembly"],
         filtering=config["params"]["vep"]["extra"]["filtering"],
+        cache=branch(
+            config['execution_mode'] == 'CI',
+            then="",
+            otherwise=lambda input: f'--offline --cache --dir_cache' + os.path.dirname(input.cache)
+        ),
         plugin_dir=lambda wc, input: os.path.dirname(input.plugin_wt),
     container:
         "docker://danilotat/eneo",
@@ -52,7 +62,7 @@ rule annotate_variants:
         --dir_plugins {params.plugin_dir} \
         --force_overwrite \
         --assembly {params.assembly} \
-        --offline --cache --dir_cache {input.cache} 
+        {params.cache} \
         """
 
 rule compress_annotated_vcf:

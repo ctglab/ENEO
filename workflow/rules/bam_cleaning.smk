@@ -1,77 +1,41 @@
-if execution_mode == "full":
-    rule AddGrp:
-        input:
-            bam=os.path.join(
-                config["OUTPUT_FOLDER"],
-                config["datadirs"]["mapped_reads"],
-                "{patient}_Aligned.sortedByCoord.out.bam"
-            ),
-        output:
-            rg=temp(
-                os.path.join(
-                    config["OUTPUT_FOLDER"],
-                    config["datadirs"]["bams"],
-                    "{patient}_Aligned.sortedByCoord.out.rg.bam"
-                )
-            ),
-        container:
-            "docker://danilotat/eneo"
-        conda:
-            "../envs/gatk.yml"
-        params:
-            RGPU="{patient}",
-            RGSM="{patient}",
-            tmp_dir=config["TEMP_DIR"],
-            extra="--RGLB rg1 --RGPL illumina",
-        resources:
-            mem="32G",
-            runtime="240m",
-            ncpus=4,
-        log:
+rule AddGrp:
+    input:
+        bam=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["mapped_reads"],
+            "{patient}_Aligned.sortedByCoord.out.bam"
+        ),
+    output:
+        rg=temp(
             os.path.join(
                 config["OUTPUT_FOLDER"],
-                config["datadirs"]["logs"]["bam_cleaning"],
-                "{patient}.log"
-            ),
-        shell:
-            """ 
-            gatk AddOrReplaceReadGroups  -I {input.bam} -O {output.rg} {params.extra} --TMP_DIR {params.tmp_dir} --RGPU {params.RGPU} --RGSM {params.RGSM}
-            """
-elif execution_mode == "reduced":
-    rule AddGrp:
-        input: 
-            unpack(get_bam),
-        output:
-            rg=temp(
-                os.path.join(
-                    config["OUTPUT_FOLDER"],
-                    config["datadirs"]["bams"],
-                    "{patient}_Aligned.sortedByCoord.out.rg.bam"
-                )
-            ),
-        container:  
-            "docker://danilotat/eneo"
-        conda:
-            "../envs/gatk.yml"
-        params:
-            RGPU="{patient}",
-            RGSM="{patient}",
-            tmp_dir=config["TEMP_DIR"],
-            extra="--RGLB rg1 --RGPL illumina",
-        resources:
-            mem="32G",
-            runtime="240m",
-            ncpus=4,
-        log:
-            os.path.join(
-                config["OUTPUT_FOLDER"],
-                config["datadirs"]["logs"]["bam_cleaning"],
-                "{patient}.log"
-            ),
-        shell:
-            """ 
-            gatk AddOrReplaceReadGroups -I {input.bam} -O {output.rg} {params.extra} --TMP_DIR {params.tmp_dir} --RGPU {params.RGPU} --RGSM {params.RGSM}
-            """
+                config["datadirs"]["bams"],
+                "{patient}_Aligned.sortedByCoord.out.rg.bam"
+            )
+        ),
+    container:
+        "docker://danilotat/eneo"
+    conda:
+        "../envs/gatk.yml"
+    params:
+        RGPU="{patient}",
+        RGSM="{patient}",
+        tmp_dir=config["TEMP_DIR"],
+        extra="--RGLB rg1 --RGPL illumina",
+    resources:
+        mem="32G",
+        runtime="240m",
+        ncpus=4,
+    log:
+        os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["logs"]["bam_cleaning"],
+            "{patient}.log"
+        ),
+    shell:
+        """ 
+        gatk AddOrReplaceReadGroups  -I {input.bam} -O {output.rg} {params.extra} --TMP_DIR {params.tmp_dir} --RGPU {params.RGPU} --RGSM {params.RGSM}
+        """
 
 rule bed_to_intervals:
     input:

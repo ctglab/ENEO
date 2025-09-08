@@ -20,10 +20,10 @@ rule targets:
     input:
         expand(
             os.path.join(
-                config["OUTPUT_FOLDER"],
-                config["datadirs"]["VCF_out"],
-                "{patient}_annot_germProb.vcf.gz.tbi",
-            ),
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["VCF_out"],
+            "{patient}_final_passonly.vcf.gz.tbi"
+        ),
             patient=patients,
         ),
         expand(
@@ -51,4 +51,5 @@ include: "../workflow/rules/bam_cleaning.smk"
 include: "../workflow/rules/base_recalibration.smk"
 include: "../workflow/rules/HLA_typing.smk"
 include: "../workflow/rules/strelka.smk"
+include: "../workflow/rules/annotate_variants.smk"
 include: "../workflow/rules/filter_calls.smk"

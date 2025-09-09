@@ -11,19 +11,14 @@ jobs:
   Testing:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v2
+    - name: Checkout repository with submodules
+      uses: actions/checkout@v3
       with:
-        python-version: 3.8
-    - name: Add conda to system path
-      run: |
-        # $CONDA is an environment variable pointing to the root of the miniconda directory
-        echo $CONDA/bin >> $GITHUB_PATH
-    - name: Setup snakemake
-      run: |
-        conda install -c conda-forge -c bioconda snakemake==8.29.2
+        submodules: recursive
     - name: Test workflow
-      run: |
-        cd .test ; snakemake -s Snakefile --use-conda --cores 4
+      uses: snakemake/snakemake-github-action@v1.22.0
+      with:
+        directory: .test
+        snakefile: .test/Snakefile
+        args: "--configfile .test/config/config.yaml --use-conda --show-failed-logs --cores 2 --conda-cleanup-pkgs cache"
     

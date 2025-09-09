@@ -6,6 +6,9 @@ repo_url: https://github.com/ctglab/ENEO
 
 theme:
   name: material
+  font:
+    text: Manrope
+    code: IBM Plex Mono
   features:
     - navigation.tabs
     - navigation.sections

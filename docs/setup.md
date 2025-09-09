@@ -8,12 +8,12 @@ The configuration file is divided into sections, and here we provide a detailed 
 
 The first three parameters are put on top of the configuration file, and they are the most important ones. They are:
 
-- `execution_mode`: it can be either `full` or `reduced`. The `full` mode is the default one, and will be used when the expected input is a pair of .FASTQ files coming from a paired-end RNAseq experiment. The `reduced` mode is a lighter version to be used when the input is an aligned .BAM file.
+- `execution_mode`: it's just a placeholder. Leave it with `full`.
 - `OUTPUT_FOLDER`: the path to the output folder where the results will be saved. It is mandatory to provide the **absolute** path.
 - `TEMP_DIR`: the path to the temporary folder where the intermediate files will be saved. It is mandatory to provide the **absolute** path.
 
 ```yaml
-execution_mode: "reduced"
+execution_mode: "full"
 OUTPUT_FOLDER: /path/to/../ENEO_output/
 TEMP_DIR: /path/to/../ENEO_temp/
 ```

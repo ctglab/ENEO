@@ -20,7 +20,7 @@ This script will download different resources:
 
 - genome from GIAB, the `GRCh38_GIABv3_no_alt_analysis_set_maskedGRC_decoys_MAP2K3_KMT2C_KCNJ18` version. Why? Look [here](https://gist.github.com/brentp/1935e9bada1ea3185fbbc132019a619e). 
 - transcriptome and GTF from [Gencode](https://www.gencodegenes.org/human/)
-- 1000G, ExAC from the GATK resource bundle
+- 1000G, ExAC, 1000g PoN from the GATK resource bundle
 - dbSNPs ALFA from NCBI
 - REDI portal
 - VEP cache (v105)

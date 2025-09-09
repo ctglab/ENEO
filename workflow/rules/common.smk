@@ -16,7 +16,7 @@ execution_mode = config.get('execution_mode')
 
 configpath = "config/config_main.yaml"
 patients = pd.read_csv("patients.csv")["patient"]
-units = pd.read_csv("units_fixed.csv").set_index(["patient"], drop=False)
+units = pd.read_csv("units.csv").set_index(["patient"], drop=False)
 units = units.sort_index()
 
 slurm_logdir = config["slurm_log_dir"]

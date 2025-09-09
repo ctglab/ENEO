@@ -42,7 +42,7 @@ dependencies:
   - ncurses
   - openssl
   - pip
-  - python
+  - python==3.12
   - python_abi
   - readline
   - setuptools

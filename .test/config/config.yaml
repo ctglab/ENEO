@@ -1,5 +1,5 @@
 # This is a config file intended to be used just for CI testing
-execution_mode: "full"
+execution_mode: "CI"
 OUTPUT_FOLDER: ENEO_output/
 TEMP_DIR: temp_gatk
 datadirs:
@@ -47,10 +47,10 @@ params:
     threads: 4
   pMHC:
     threads: 4
-    netmhcpan_launcher_script: workflow/scripts/netmhcpan_launcher.py
-    calibration_frame: workflow/supplementary_res/optimal_percentile_netmhcpan.csv
-    hla_ligand_atlas: workflow/supplementary_res/HLA_ligand_atlas.tsv.gz
-    filter_peptides_script: workflow/scripts/filter_peptides.py
+    netmhcpan_launcher_script: ../workflow/scripts/netmhcpan_launcher.py
+    calibration_frame: ../workflow/supplementary_res/optimal_percentile_netmhcpan.csv
+    hla_ligand_atlas: ../workflow/supplementary_res/HLA_ligand_atlas.tsv.gz
+    filter_peptides_script: ../workflow/scripts/filter_peptides.py
     min_length: 8
     max_length: 12
     germProb: 0.5
@@ -85,7 +85,7 @@ params:
   vep:
     extra:
       assembly: GRCh38
-      filtering: --gencode_basic --coding_only --no_intergenic
+      filtering: "--gencode_basic --coding_only --no_intergenic"
       plugins:
         Frameshift: ../workflow/utils/vep_plugins/Frameshift.pm
         Wildtype: ../workflow/utils/vep_plugins/Wildtype.pm
@@ -101,11 +101,14 @@ resources:
   hla_script: "../workflow/scripts/HLA_typing.py"
   indel: "test_data/indels_chr6.vcf.gz"
   intervals_coding: test_data/exons_target.BED.gz
+  PoN: "test_data/1000g_pon_chr6.vcf.gz"
   REDI: "test_data/REDI_chr6.BED.gz"
   t1k_file: "../workflow/supplementary_res/hlaidx_rna_seq.fa"
   toml_script: "../workflow/scripts/createTOML.py"
+  rna_errors_script: "../workflow/scripts/filter_rna_errors.py"
   transcriptome: "test_data/chr6_cdna.fa.gz"
   vcfanno_binary: "../workflow/utils/vcfanno_linux64"
   vcfanno_lua: "../workflow/utils/custom.lua"
   vcfanno_toml: "../workflow/utils/vcfanno.toml"
+  vep_cache: ""
 slurm_log_dir: slurm-logs

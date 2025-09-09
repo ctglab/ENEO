@@ -34,5 +34,9 @@
     "vep_cache": {
         "filetype": "archive",
         "url": "https://ftp.ensembl.org/pub/release-105/variation/indexed_vep_cache/homo_sapiens_vep_105_GRCh38.tar.gz"
+    },
+    "PoN": {
+        "filetype": "VCF",
+        "url": "https://storage.googleapis.com/gatk-best-practices/somatic-hg38/1000g_pon.hg38.vcf.gz"
     }
 }

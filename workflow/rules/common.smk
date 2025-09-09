@@ -8,15 +8,7 @@ min_version("5.9.1")
 
 configfile: "config/config_main.yaml"
 
-# Set execution mode
-if config["execution_mode"].lower() == "reduced":
-    execution_mode = "reduced"
-    print(f"The pipeline will be executed in the {execution_mode} mode")
-elif config["execution_mode"].lower() == "full":
-    execution_mode = "full"
-    print(f"The pipeline will be executed in the {execution_mode} mode")
-else:
-    raise ValueError(f"The parameter 'execution_mode' must be one of ['bam','fastq'].")
+execution_mode = config.get('execution_mode')
 
 # Load patient info.
 # Note that this dataframe is accessed every runtime to determine the wildcards used
@@ -24,7 +16,7 @@ else:
 
 configpath = "config/config_main.yaml"
 patients = pd.read_csv("patients.csv")["patient"]
-units = pd.read_csv("units_fixed.csv").set_index(["patient"], drop=False)
+units = pd.read_csv("units.csv").set_index(["patient"], drop=False)
 units = units.sort_index()
 
 slurm_logdir = config["slurm_log_dir"]

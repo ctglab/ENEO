@@ -15,7 +15,12 @@ rule annotate_variants:
         ),
         plugin_wt=config["params"]["vep"]["extra"]["plugins"]["Wildtype"],
         plugin_fs=config["params"]["vep"]["extra"]["plugins"]["Frameshift"],
-        cache=config["resources"]["vep_cache"],
+        # branching for do annotation online in CI mode. 
+        cache=branch(
+            config['execution_mode'] == 'CI',
+            then="",
+            otherwise=config["resources"]["vep_cache"],
+        ),
     output:
         vcfout=temp(
             os.path.join(
@@ -27,6 +32,11 @@ rule annotate_variants:
     params:
         assembly=config["params"]["vep"]["extra"]["assembly"],
         filtering=config["params"]["vep"]["extra"]["filtering"],
+        cache=branch(
+            config['execution_mode'] == 'CI',
+            then="--database",
+            otherwise=lambda input: f'--offline --cache --dir_cache' + os.path.dirname(input.cache)
+        ),
         plugin_dir=lambda wc, input: os.path.dirname(input.plugin_wt),
     container:
         "docker://danilotat/eneo",
@@ -52,7 +62,7 @@ rule annotate_variants:
         --dir_plugins {params.plugin_dir} \
         --force_overwrite \
         --assembly {params.assembly} \
-        --offline --cache --dir_cache {input.cache} 
+        {params.cache} \
         """
 
 rule compress_annotated_vcf:
@@ -63,16 +73,18 @@ rule compress_annotated_vcf:
             "{patient}.annotated.vcf"
         ),
     output:
-        vcf=os.path.join(
+        vcf=temp(
+            os.path.join(
             config["OUTPUT_FOLDER"],
             config["datadirs"]["VCF_out"],
             "{patient}.vep.vcf.gz"
-        ),
-        vcf_idx=os.path.join(
+        )),
+        vcf_idx=temp(
+            os.path.join(
             config["OUTPUT_FOLDER"],
             config["datadirs"]["VCF_out"],
             "{patient}.vep.vcf.gz.tbi"
-        ),
+        )),
     container:
         "docker://danilotat/eneo",
     conda:
@@ -93,3 +105,103 @@ rule compress_annotated_vcf:
         tabix -p vcf {output.vcf}
         """
         
+rule rna_errors:
+    input:
+        vcf=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["VCF_out"],
+            "{patient}.vep.vcf.gz"
+        ),
+        vcf_idx=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["VCF_out"],
+            "{patient}.vep.vcf.gz.tbi"
+        ),
+    output:
+        vcfout=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["VCF_out"],
+            "{patient}_final.vcf.gz"
+        ),
+        vcfout_idx=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["VCF_out"],
+            "{patient}_final.vcf.gz.tbi"
+        ),
+    params:
+        script=config["resources"]["rna_errors_script"],
+        reference=os.path.abspath(
+            config["resources"]["genome"]).rstrip(".gz"),
+        PoN=config["resources"]["PoN"],
+        gtf=config["resources"]["gtf"],
+        giab=config["resources"]["giab_intervals"],
+        patID="{patient}",
+    container:
+        "docker://danilotat/eneo",
+    conda:
+        "../envs/cyvcf2.yml",
+    resources:
+        mem="6G",
+        runtime="60m",
+        ncpus=2,
+    log:
+        os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["logs"]["annotate_variants"],
+            "{patient}_rna_errors.log"
+        ),
+    shell:
+        """
+        python {params.script} \
+            --vcf {input.vcf} \
+            --ref {params.reference} \
+            --giab {params.giab} \
+            --gtf {params.gtf} \
+            --pon {params.PoN} \
+            --pat {params.patID} \
+            --out {output.vcfout}
+        tabix -p vcf {output.vcfout}
+        """
+
+rule passonly:
+    input:
+        vcf=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["VCF_out"],
+            "{patient}_final.vcf.gz"
+        ),
+        vcf_idx=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["VCF_out"],
+            "{patient}_final.vcf.gz.tbi"
+        ),
+    output:
+        vcfout=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["VCF_out"],
+            "{patient}_final_passonly.vcf.gz"
+        ),
+        vcfout_idx=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["VCF_out"],
+            "{patient}_final_passonly.vcf.gz.tbi"
+        ),
+    container:
+        "docker://danilotat/eneo",
+    conda:
+        "../envs/cyvcf2.yml",
+    resources:
+        mem="6G",
+        runtime="60m",
+        ncpus=2,
+    log:
+        os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["logs"]["annotate_variants"],
+            "{patient}_passonly.log"
+        ),
+    shell:
+        """
+        bcftools view -f .,PASS {input.vcf} -Oz -o {output.vcfout}
+        tabix -p vcf {output.vcfout}
+        """

@@ -34,7 +34,7 @@ rule annotate_variants:
         filtering=config["params"]["vep"]["extra"]["filtering"],
         cache=branch(
             config['execution_mode'] == 'CI',
-            then="",
+            then="--database",
             otherwise=lambda input: f'--offline --cache --dir_cache' + os.path.dirname(input.cache)
         ),
         plugin_dir=lambda wc, input: os.path.dirname(input.plugin_wt),
@@ -130,7 +130,8 @@ rule rna_errors:
         ),
     params:
         script=config["resources"]["rna_errors_script"],
-        reference=config["resources"]["genome"],
+        reference=os.path.abspath(
+            config["resources"]["genome"]).rstrip(".gz"),
         PoN=config["resources"]["PoN"],
         gtf=config["resources"]["gtf"],
         giab=config["resources"]["giab_intervals"],
@@ -188,7 +189,7 @@ rule passonly:
     container:
         "docker://danilotat/eneo",
     conda:
-        "../envs/vep.yml",
+        "../envs/cyvcf2.yml",
     resources:
         mem="6G",
         runtime="60m",

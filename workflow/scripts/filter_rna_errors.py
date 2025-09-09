@@ -21,6 +21,15 @@ import bionumpy as bnp
 import numpy as np
 import shutil
 import argparse
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    datefmt="%Y-%m-%d %H:%M:%S",
+    handlers=[
+        logging.StreamHandler(sys.stdout)
+    ])
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Filtering of the VCF file to account for sites that may induce systematic errors')
@@ -105,7 +114,7 @@ class GTF_record(object):
         else:
             attributes = attributes.replace('"', '').replace('; ', ';').replace(" ", "=")
             try:
-                return {k:v for k,v in [x.split("=") for x in attributes.split(";")[:-1]]}
+                return {k:v for k,v in [x.split("=")[:2] for x in attributes.split(";")[:-1]]}
             except ValueError:
                 print(attributes)
                 raise
@@ -127,13 +136,13 @@ class GTF_record(object):
             True if the record is protein coding, False otherwise.
         """
         try:
-            if feat_dict["gene_type"] == "protein_coding":
+            if feat_dict["gene_biotype"] == "protein_coding":
                 return True
             else:
                 return False
         except KeyError:
-            print(feat_dict)
-            raise
+            # that's something for ncRNA 
+            return False
 
 class SplicingCollector(object):
     def __init__(self, gtf_file: str):
@@ -296,8 +305,6 @@ def get_variant_close_to_splice(vcf_file: str, sc: SplicingCollector, dist=4):
     splicing_errors = 0
     for variant in cyvcf2.VCF(vcf_file):
         chrom = variant.CHROM
-        if not "chr" in chrom:
-            chrom = "chr"+chrom
         pos = variant.POS
         # get the distance 
         distance = sc.distance_from_splice(chrom, pos)
@@ -345,6 +352,7 @@ def main():
     CSQ_variants = VariantCollector(f"{tmp_folder}/{patient}_nocsq.vcf.gz", "non-coding")
     # drop the leakage errors
     leakage_errors = get_leakage_errors(args.vcf, genome)
+    print(sc.ss)
     splicing_errors = get_variant_close_to_splice(args.vcf, sc, dist=args.dist)
     # final writing
     vcf_in = cyvcf2.VCF(args.vcf)

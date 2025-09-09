@@ -1,12 +1,39 @@
-rule star_index:
+rule fastadict:
     input:
         fasta=config["resources"]["genome"],
+    output:
+        decompressed=os.path.abspath(
+            config["resources"]["genome"]).rstrip(".gz"),
+        dict=''.join(config["resources"]["genome"].split('.')[:-2]) + ".dict"
+    container:
+        "docker://danilotat/eneo"
+    conda:
+        "../envs/gatk.yml"
+    log:
+        os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["logs"]["intervals"],
+            "fastadict.log"
+        )
+    resources:
+        mem="8G",
+        ncpus=1,
+        runtime="60m",
+    shell:
+        """
+        zcat {input.fasta} > {output.decompressed}
+        gatk CreateSequenceDictionary -R {output.decompressed} -O {output.dict}
+        """
+
+rule star_index:
+    input:
+        fasta=os.path.abspath(
+            config["resources"]["genome"]).rstrip(".gz"),
         gtf=config["resources"]["gtf"],
     output:
         directory(config["datadirs"]["index_folder"]),
     threads: config["params"]["STAR"]["threads"]
     params:
-        uncompressed=lambda w, input: input[0].replace(".gz",""),
     container:
         "docker://danilotat/eneo"
     conda:
@@ -19,8 +46,9 @@ rule star_index:
         runtime="360m",
     shell:
         """
+        echo {input.fasta}
         STAR --runMode genomeGenerate --runThreadN {threads} --genomeDir {output} \
-        --genomeFastaFiles {params.uncompressed} --sjdbOverhang 100 --sjdbGTFfile {input.gtf}"""
+        --genomeFastaFiles {input.fasta} --sjdbOverhang 100 --sjdbGTFfile {input.gtf}"""
 
 
 rule salmon_gentrome:

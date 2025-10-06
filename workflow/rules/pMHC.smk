@@ -13,7 +13,7 @@ rule pMHCpeptides:
     output:
         out=os.path.join(config["OUTPUT_FOLDER"], config["datadirs"]["peptides"], "{patient}", "{patient}.epitopes.csv"),
     container:
-        "docker://danilotat/eneo"
+        "docker://ctglabcnr/eneo"
     log:
         os.path.join(config["OUTPUT_FOLDER"], config["datadirs"]["logs"]["pMHC"], "{patient}.log"),
     resources:
@@ -45,7 +45,7 @@ rule filter_peptides:
         ncpus=2,
         mem="2G",
     container:
-        "docker://danilotat/eneo"
+        "docker://ctglabcnr/eneo"
     shell:
         """
         python3 {input.script} -i {input.peptides} -c {input.calibration_frame} -a {input.hla_ligand_atlas} -o {output.out} -min {params.min_length} -max {params.max_length} -g {params.germProb}

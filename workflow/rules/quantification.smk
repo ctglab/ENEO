@@ -81,6 +81,8 @@ rule export_quantification:
         runtime="30m",
         ncpus=2,
         mem="8G",
+    container:
+        "docker://ctglabcnr/tximport"
     conda:
         "../envs/merge_salmon_quant.yml"
     script:

@@ -56,7 +56,7 @@ rule genotype:
         prefix="{patient}",
         outdir=lambda w, output: os.path.dirname(os.path.abspath(output.hla)),
     container:
-        "docker://danilotat/eneo"
+        "docker://ctglabcnr/t1k"
     conda:
         "../envs/t1k.yml"
     threads: config["params"]["t1k"]["threads"]
@@ -91,7 +91,7 @@ rule extract_hla:
             "{patient}_allele_input_pvacseq.csv"
         ),
     container:
-        "docker://danilotat/eneo"
+        "docker://ctglabcnr/eneo"
     conda:
         "../envs/cyvcf2.yml"
     log:

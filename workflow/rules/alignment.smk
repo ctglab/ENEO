@@ -11,7 +11,7 @@ rule align:
                 "{patient}_Aligned.out.bam"
             ),
     container:
-        "docker://danilotat/eneo"
+        "docker://ctglabcnr/star"
     conda:
         "../envs/star.yml"
     params:
@@ -53,7 +53,7 @@ rule sortAlign:
                 "{patient}_Aligned.sortedByCoord.out.bam"
             ),
     container:
-        "docker://danilotat/eneo"
+        "docker://ctglabcnr/eneo"
     conda:
         "../envs/samtools.yml" 
     threads: config["params"]["samtools"]["threads"]
@@ -87,7 +87,7 @@ rule indexSortAligned:
                 "{patient}_Aligned.sortedByCoord.out.bam.bai"
             ),
     container:
-        "docker://danilotat/eneo"
+        "docker://ctglabcnr/eneo"
     conda:
         "../envs/samtools.yml"
     threads: config["params"]["samtools"]["threads"]

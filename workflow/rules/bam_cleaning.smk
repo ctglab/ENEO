@@ -14,7 +14,7 @@ rule AddGrp:
             )
         ),
     container:
-        "docker://danilotat/eneo"
+        "docker://broadinstitute/gatk:4.6.0.0"
     conda:
         "../envs/gatk.yml"
     params:
@@ -48,7 +48,7 @@ rule bed_to_intervals:
             "coding.interval_list"
         ),
     container:
-        "docker://danilotat/eneo"
+        "docker://broadinstitute/gatk:4.6.0.0"
     conda:
         "../envs/gatk.yml"
     resources:
@@ -92,7 +92,7 @@ rule mark_duplicates:
         hard_ram=config["params"]["gatk"]["RAM"],
         temporary_dir=config["TEMP_DIR"],
     container:
-        "docker://danilotat/eneo"
+        "docker://broadinstitute/gatk:4.6.0.0"
     conda:
         "../envs/gatk.yml"
     threads: config["params"]["MarkDuplicates"]["threads"]
@@ -131,7 +131,7 @@ rule sort_bam_gatk:
             )
         ),
     container:
-        "docker://danilotat/eneo"
+        "docker://ctglabcnr/eneo"
     conda:
         "../envs/samtools.yml"
     resources:
@@ -166,7 +166,7 @@ rule samtools_index:
             )
         ),
     container:
-        "docker://danilotat/eneo"
+        "docker://ctglabcnr/eneo"
     conda:
         "../envs/samtools.yml"
     resources:
@@ -215,7 +215,7 @@ rule SplitNCigarReads:
         temporary_dir=config["TEMP_DIR"],
     threads: config["params"]["SplitNCigarReads"]["threads"]
     container:
-        "docker://danilotat/eneo"
+        "docker://broadinstitute/gatk:4.6.0.0"
     conda:
         "../envs/gatk.yml"
     resources:

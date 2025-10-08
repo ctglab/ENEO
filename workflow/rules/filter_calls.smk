@@ -43,7 +43,7 @@ rule vcfanno:
         ncpus=4,
         mem="16G",
     container:
-        "docker://danilotat/eneo"
+        "docker://danilotat/eneo" #CONVERT to VEP
     conda:
         "../envs/vep.yml"
     shell:
@@ -78,7 +78,7 @@ rule filtercalls:
             )
         ),
     container:
-        "docker://danilotat/eneo"
+        "docker://ctglabcnr/eneo"
     conda:
         "../envs/samtools.yml"
     threads: config["params"]["samtools"]["threads"]
@@ -112,7 +112,7 @@ rule createTOML:
             "vcfanno.toml"
         ),
     container:
-        "docker://danilotat/eneo"
+        "docker://ctglabcnr/eneo"
     conda:
         "../envs/cyvcf2.yml"
     log:
@@ -151,7 +151,7 @@ rule germProb:
             config["datadirs"]["VCF_out"],
             "{patient}_annot_germProb.vcf.gz"
         )),
-    container: "docker://danilotat/eneo"
+    container: "docker://ctglabcnr/eneo"
     conda:
         "../envs/cyvcf2.yml"
     log:
@@ -184,7 +184,7 @@ rule indexgermProb:
             "{patient}_annot_germProb.vcf.gz.tbi"
         )),
     container:
-        "docker://danilotat/eneo"
+        "docker://ctglabcnr/eneo"
     conda:
         "../envs/vep.yml"
     log:

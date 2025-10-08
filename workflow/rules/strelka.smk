@@ -15,7 +15,7 @@ rule Strelka_prep:
             "runWorkflow.py",
         ),
     params:
-        ref_fasta=config["resources"]["genome"],
+        ref_fasta=os.path.abspath(config["resources"]["genome"]),
         regions=config["resources"]["intervals_coding"],
         runDir=os.path.join(
             config["OUTPUT_FOLDER"],
@@ -23,7 +23,7 @@ rule Strelka_prep:
             "{patient}_workflow",
         ),
     container:
-        "docker://danilotat/strelka2",
+        "docker://ctglabcnr/strelka2:latest",
     conda:
         "../envs/strelka2.yml"
     log:
@@ -72,7 +72,7 @@ rule Strelka2:
     params:
         threads=config["params"]["strelka2"]["threads"],
     container:
-        "docker://danilotat/strelka2",
+        "docker://ctglabcnr/strelka2:latest",
     conda:
         "../envs/strelka2.yml"
     log:

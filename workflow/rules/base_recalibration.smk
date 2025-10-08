@@ -21,7 +21,7 @@ rule BQSR_1:
         mem="32G",
     threads: config["params"]["BQSR"]["threads"]
     container:
-        "docker://danilotat/eneo"
+        "docker://broadinstitute/gatk:4.6.0.0"
     conda:
         "../envs/gatk.yml"
     log:
@@ -64,7 +64,7 @@ rule applyBQSR:
         )
     threads: config["params"]["BQSR"]["threads"]
     container:
-        "docker://danilotat/eneo"
+        "docker://broadinstitute/gatk:4.6.0.0"
     conda:
         "../envs/gatk.yml"
     resources:
@@ -107,7 +107,7 @@ rule compressBam:
         ),
     threads: config["params"]["samtools"]["threads"],
     container:
-        "docker://danilotat/eneo"
+        "docker://ctglabcnr/eneo"
     conda:
         "../envs/samtools.yml"
     resources:

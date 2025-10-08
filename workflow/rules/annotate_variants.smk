@@ -39,7 +39,7 @@ rule annotate_variants:
         ),
         plugin_dir=lambda wc, input: os.path.dirname(input.plugin_wt),
     container:
-        "docker://danilotat/eneo",
+        "docker://ensemblorg/ensembl-vep:release_105.0",
     conda:
         "../envs/vep.yml",
     resources:
@@ -86,7 +86,7 @@ rule compress_annotated_vcf:
             "{patient}.vep.vcf.gz.tbi"
         )),
     container:
-        "docker://danilotat/eneo",
+        "docker://ctglabcnr/eneo",
     conda:
         "../envs/vep.yml",
     resources:
@@ -137,7 +137,7 @@ rule rna_errors:
         giab=config["resources"]["giab_intervals"],
         patID="{patient}",
     container:
-        "docker://danilotat/eneo",
+        "docker://ctglabcnr/eneo",
     conda:
         "../envs/cyvcf2.yml",
     resources:
@@ -187,7 +187,7 @@ rule passonly:
             "{patient}_final_passonly.vcf.gz.tbi"
         ),
     container:
-        "docker://danilotat/eneo",
+        "docker://ctglabcnr/eneo",
     conda:
         "../envs/cyvcf2.yml",
     resources:

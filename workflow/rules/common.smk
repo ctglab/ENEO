@@ -3,7 +3,7 @@ import os
 import glob
 from snakemake.utils import min_version
 
-min_version("5.9.1")
+min_version("8.0.0")
 
 
 configfile: "config/config_main.yaml"

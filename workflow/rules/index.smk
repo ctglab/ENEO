@@ -35,7 +35,7 @@ rule star_index:
     threads: config["params"]["STAR"]["threads"]
     params:
     container:
-        "docker://danilotat/eneo"
+        "docker://ctglabcnr/star"
     conda:
         "../envs/star.yml"
     log:

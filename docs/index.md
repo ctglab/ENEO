@@ -8,7 +8,7 @@ ENEO is a [Snakemake](https://snakemake.readthedocs.io/en/stable/) workflow deve
 To execute the pipeline, it's required to have both [snakemake](https://snakemake.readthedocs.io/en/stable/) and [singularity](https://docs.sylabs.io/guides/3.1/user-guide/index.html) or [apptainer](https://apptainer.org/docs/user/latest/) installed. The easiest way to install both of them is using a dedicated conda environment. To create a new environment, use the following commands:
 
 ```
-conda create -n eneo -c bioconda snakemake singularity 
+conda create -c conda-forge -c bioconda -c nodefaults -n snakemake snakemake apptainer
 ```
 
 To start, clone the repo using 

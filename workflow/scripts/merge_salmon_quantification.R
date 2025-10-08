@@ -1,26 +1,39 @@
-
 library("dplyr")
 library("tximport")
-library("tximeta")
+library("rtracklayer") 
 library("tibble")
-
 
 files <- file.path(snakemake@input[["quant"]])
 patients <- snakemake@params[["patients"]]
-coldata <- data.frame(files=files, names=patients)
-# # build linked Txome
-indexDir <- file.path(snakemake@params[["index"]])
-fasta <- file.path(snakemake@input[["cdna_fasta"]])
-gtf <- file.path(snakemake@input[["annotation"]])
-makeLinkedTxome(indexDir=indexDir,source="Ensembl",
-organism="Homo sapiens",release="105",genome="GRCh38",
-fasta=fasta,gtf=gtf)
-se <- tximeta(coldata, useHub=FALSE)
+gtf_file <- file.path(snakemake@input[["annotation"]])
+coldata <- data.frame(files = files, names = patients, stringsAsFactors = FALSE)
 
+gtf <- rtracklayer::import(gtf_file)
 
-transcript_level_TPM <- se@assays@data@listData[["abundance"]] %>% as.data.frame() %>% tibble::rownames_to_column(var="transcripts")
-write.table(transcript_level_TPM, sep="\t", file=snakemake@output[["transcript"]],row.names = F, quote=F)
-gse <- summarizeToGene(se, countsFromAbundance="lengthScaledTPM")
-gene_level_TPM <- gse@assays@data@listData[["abundance"]] %>% as.data.frame() %>% tibble::rownames_to_column(var="genes")
-write.table(gene_level_TPM, sep="\t", file=snakemake@output[["gene"]],row.names = F, quote=F)
+tx2gene <- as.data.frame(mcols(gtf)[, c("transcript_id", "gene_id")])
 
+tx2gene <- tx2gene[!is.na(tx2gene$transcript_id), ]
+txi <- tximport(files, 
+                type = "salmon", 
+                tx2gene = tx2gene, 
+                ignoreTxVersion = TRUE,
+                countsFromAbundance = "lengthScaledTPM")
+transcript_level_TPM <- txi$abundance %>%
+  as.data.frame() %>%
+  tibble::rownames_to_column(var = "transcripts")
+
+write.table(transcript_level_TPM, 
+            file = snakemake@output[["transcript"]],
+            sep = "\t", 
+            row.names = FALSE, 
+            quote = FALSE)
+
+gene_level_TPM <- txi$abundance %>%
+  as.data.frame() %>%
+  tibble::rownames_to_column(var = "genes")
+
+write.table(gene_level_TPM, 
+            file = snakemake@output[["gene"]],
+            sep = "\t", 
+            row.names = FALSE, 
+            quote = FALSE)

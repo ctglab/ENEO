@@ -6,7 +6,7 @@ rule fastadict:
             config["resources"]["genome"]).rstrip(".gz"),
         dict=''.join(config["resources"]["genome"].split('.')[:-2]) + ".dict"
     container:
-        "docker://danilotat/eneo"
+        "docker://broadinstitute/gatk:4.6.0.0"
     conda:
         "../envs/gatk.yml"
     log:
@@ -62,7 +62,7 @@ rule salmon_gentrome:
     log:
         os.path.join(config["datadirs"]["logs"]["salmon_quant"], "gentrome.log"),
     container:
-        "docker://danilotat/eneo"
+        "docker://ctglabcnr/eneo"
     conda:
         "../envs/salmon.yml"
     shell:

@@ -3,7 +3,9 @@ import os
 
 rule vcfanno:
     input:
-        toml_file=config["OUTPUT_FOLDER"] + "vcfanno.toml",
+        toml_file=os.path.join(
+            config["OUTPUT_FOLDER"],
+            "vcfanno.toml"),
         vcf=os.path.join(
             config["OUTPUT_FOLDER"],
             config["datadirs"]["VCF_out"],
@@ -43,7 +45,7 @@ rule vcfanno:
         ncpus=4,
         mem="16G",
     container:
-        "docker://danilotat/eneo" #CONVERT to VEP
+        "docker://ctglabcnr/eneo"
     conda:
         "../envs/vep.yml"
     shell:

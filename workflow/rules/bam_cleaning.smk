@@ -40,7 +40,7 @@ rule AddGrp:
 rule bed_to_intervals:
     input:
         bed=config["resources"]["intervals_coding"],
-        fasta_dict=''.join(config['resources']['genome'].split('.')[:-2]) + ".dict",
+        fasta_dict=''.join(config['resources']['genome'].split('.')[:-1]) + ".dict",
     output:
         intervals=os.path.join(
             config["OUTPUT_FOLDER"],

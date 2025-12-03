@@ -173,8 +173,10 @@ class SplicingCollector(object):
     def distance_from_splice(self, chrom: str, pos: int):
         if chrom not in self.ss:
             raise ValueError(f"Chromosome {chrom} not found in the splicing sites. Did you use the same chromosome notation?")
-        else:
+        try:
             return np.min(np.abs(self.ss[chrom] - pos))
+        except ValueError:
+            return np.nan
 
 class VariantCollector(object):
     def __init__(self, vcf_file: str, tag: str):

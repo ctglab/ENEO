@@ -4,7 +4,8 @@ rule fastadict:
     output:
         decompressed=os.path.abspath(
             config["resources"]["genome"]).rstrip(".gz"),
-        dict=''.join(config["resources"]["genome"].split('.')[:-2]) + ".dict"
+        fasta_dict=os.path.abspath(
+            config['resources']['genome']).rstrip(".gz") + ".dict"
     container:
         "docker://broadinstitute/gatk:4.6.0.0"
     conda:
@@ -22,7 +23,7 @@ rule fastadict:
     shell:
         """
         zcat {input.fasta} > {output.decompressed}
-        gatk CreateSequenceDictionary -R {output.decompressed} -O {output.dict}
+        gatk CreateSequenceDictionary -R {output.decompressed} -O {output.fasta_dict}
         """
 
 rule star_index:
@@ -46,9 +47,9 @@ rule star_index:
         runtime="360m",
     shell:
         """
-        echo {input.fasta}
         STAR --runMode genomeGenerate --runThreadN {threads} --genomeDir {output} \
-        --genomeFastaFiles {input.fasta} --sjdbOverhang 100 --sjdbGTFfile {input.gtf}"""
+        --genomeFastaFiles {input.fasta} --sjdbOverhang 100 --sjdbGTFfile {input.gtf}
+        """
 
 
 rule salmon_gentrome:

@@ -1,47 +1,65 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
-# Helper function to generate the TOML file required for the 
-# annotation with vcfanno.
+"""
+Generate a TOML file for vcfanno by merging a YAML configuration
+with a TOML template. All resource paths are taken from the YAML.
+"""
 
 import argparse
-from pip._vendor import tomli
 import toml
 import yaml
 
+
 def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-y", "--yaml", help="yaml file with the configuration", required=True)
-    parser.add_argument("-t", "--template", help="TOML template file", required=True)
-    parser.add_argument("-o", "--output", help="TOML output file", required=True)
+    parser = argparse.ArgumentParser(description="Generate TOML annotation file for vcfanno.")
+    parser.add_argument("-y", "--yaml", required=True, help="YAML configuration file")
+    parser.add_argument("-t", "--template", required=True, help="TOML template file")
+    parser.add_argument("-o", "--output", required=True, help="Output TOML file")
     return parser.parse_args()
 
 
-def main(yaml_file, template_file, output_file):
-    # read the yaml file
-    with open(yaml_file, 'r') as f:
-        conf_main = yaml.safe_load(f)
-    # load the toml template
-    with open(template_file, 'rb') as f:
-        conf_template = tomli.load(f)
-    # update the template with the configuration
-    for field in conf_template['annotation']:
-        if "gnomAD" in field['names'][0]:
-            field['file'] = conf_main['resources']['gnomad']
-        elif "rs_ids" in field['names'][0]:
-            field['file'] = conf_main['resources']['dbsnps']
-        elif "REDI" in field['names'][0]:
-            field['file'] = conf_main['resources']['REDI']
-        elif "indel" in field['names'][0]:
-            field['file'] = conf_main['resources']['indel']
-        elif "Unmet" in field['names'][0]:
-            field['file'] = conf_main['resources']['unmet_bed']
-        else:
-            raise ValueError("Unknown field: {}".format(field['names'][0]))
-    # write the output file
-    with open(output_file, "w") as f:
-        toml.dump(conf_template, f)
+def load_yaml(path):
+    with open(path, "r") as f:
+        return yaml.safe_load(f)
+
+
+def load_toml(path):
+    with open(path, "r") as f:
+        return toml.load(f)
+
+
+def update_template(template, config):
+    """Replace the input template paths using rules based on field name."""
+    resources = config.get("resources", {})
+    mapping_rules = [
+        ("gnomAD", "gnomad"),
+        ("rs_ids", "dbsnps"),
+        ("REDI", "REDI"),
+        ("indel", "indel"),
+        ("Unmet", "unmet_bed"),
+    ]
+    for field in template.get("annotation", []):
+        name = field["names"][0]
+        matched = False
+        for key_substring, resource_key in mapping_rules:
+            if key_substring in name:
+                field["file"] = resources[resource_key]
+                matched = True
+                break
+        if not matched:
+            raise ValueError(f"Unknown field in template: {name}")
+
+    return template
+
+
+def main():
+    args = parse_args()
+    config = load_yaml(args.yaml)
+    template = load_toml(args.template)
+    updated = update_template(template, config)
+    with open(args.output, "w") as f:
+        toml.dump(updated, f)
 
 
 if __name__ == "__main__":
-    args = parse_args()
-    main(args.yaml, args.template, args.output)
+    main()

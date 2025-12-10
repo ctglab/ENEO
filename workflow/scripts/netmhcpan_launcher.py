@@ -150,13 +150,13 @@ class frameGenerator(object):
         return frame
     
 def convertHLA_notation(hla: str):
-        """
-        netMHCpan doesn't like the HLA notation used by the other tools.
-        """
-        if '*' in hla:
-            return hla.replace('*', '')
-        else:
-            return f"{hla[0:5]}*{hla[-5:]}"
+    """
+    netMHCpan doesn't like the HLA notation used by the other tools.
+    """
+    if '*' in hla:
+        return hla.replace('*', '')
+    else:
+        return f"{hla[0:5]}*{hla[-5:]}"
 
 class launcher(object):
     def __init__(self, inputDf: pd.DataFrame, seqColumn: str, alleleCol: str, outfolder: str, ncpus=10, **kwargs):
@@ -183,16 +183,6 @@ class netMHCpan_launcher(launcher):
         exec_path, seqfile, conv_allele, cmd_params, outfile = args
         with open(outfile, 'w') as ofile:
             subprocess.run([exec_path, '-p', seqfile, '-a', conv_allele, cmd_params], stdout=ofile)
-    
-    def ensureConfig(self):
-        """
-        Simple check to verify that the netmhcpan is correcly configured. 
-        @TODO: just grab from the exec path
-        """
-        if not os.path.exists(self.params['data_path']):
-            raise ValueError("netMHCpan data path not found. Please download them and place in the right folder.")
-        else:
-            return True
             
     def parse_params(self):
         """
@@ -208,38 +198,36 @@ class netMHCpan_launcher(launcher):
     
     def launch(self):
         # Multiprocessing version
-        if self.isok:
-            print("Executing netmhcpan..")
-            # create the output directory for the results
-            start = time.time()
-            outfolder = self.outfolder
-            os.makedirs(outfolder, exist_ok=True)
-            # create the input file
-            # make also a temp folder 
-            tempfolder = os.path.join(outfolder, 'temp')
-            os.makedirs(tempfolder, exist_ok=True)
-            # split unique_alleles into chunks
-            n_chunks = self.ncpus
-            chunks = np.array_split(self.df, n_chunks)
-            columns = self.df.columns
-            args_list = []
-            for idx,chunk in enumerate(chunks):
-                print(f"Processing chunk {idx} of {n_chunks}")
-                
-                chunk = pd.DataFrame(chunk)
-                chunk.columns = columns
-                for allele in chunk['mhc'].unique():
-                    conv_allele = convertHLA_notation(allele)
-                    seqs = chunk[chunk['mhc'] == allele]['pep']         
-                    seqfile = os.path.join(tempfolder, f'{conv_allele}_batch_{idx}.csv')
-                    seqs.to_csv(seqfile, index=False, header=False)
-                    outfile = os.path.join(tempfolder, f'{conv_allele}_results_batch_{idx}.csv')
-                    args_list.append((self.exec_path, seqfile, conv_allele, self.cmd_params, outfile))
-            # launch
-            with Pool() as pool:
-                pool.map(self.run_subprocess, args_list)
-            end = time.time()
-            print(f"netMHCpan completed the task in {end-start:.3f} seconds.")
+        print("Executing netmhcpan..")
+        # create the output directory for the results
+        start = time.time()
+        outfolder = self.outfolder
+        os.makedirs(outfolder, exist_ok=True)
+        # create the input file
+        # make also a temp folder 
+        tempfolder = os.path.join(outfolder, 'temp')
+        os.makedirs(tempfolder, exist_ok=True)
+        # split unique_alleles into chunks
+        n_chunks = self.ncpus
+        chunks = np.array_split(self.df, n_chunks)
+        columns = self.df.columns
+        args_list = []
+        for idx,chunk in enumerate(chunks):
+            print(f"Processing chunk {idx} of {n_chunks}")
+            chunk = pd.DataFrame(chunk)
+            chunk.columns = columns
+            for allele in chunk['mhc'].unique():
+                conv_allele = convertHLA_notation(allele)
+                seqs = chunk[chunk['mhc'] == allele]['pep']         
+                seqfile = os.path.join(tempfolder, f'{conv_allele}_batch_{idx}.csv')
+                seqs.to_csv(seqfile, index=False, header=False)
+                outfile = os.path.join(tempfolder, f'{conv_allele}_results_batch_{idx}.csv')
+                args_list.append((self.exec_path, seqfile, conv_allele, self.cmd_params, outfile))
+        # launch
+        with Pool() as pool:
+            pool.map(self.run_subprocess, args_list)
+        end = time.time()
+        print(f"netMHCpan completed the task in {end-start:.3f} seconds.")
 
     def parse_output(self):
         """
@@ -316,7 +304,7 @@ if __name__ == "__main__":
     print(len(variants.variants))
     frame = frameGenerator(hla, variants).frame
     # instantiate the netMHCpan launcher
-    netMHCpan = netMHCpan_launcher(frame, 'MT_Epitope_Seq', 'HLA', args.outfolder, exec_path="/opt/netmhcpan/netMHCpan", data_path="/opt/netmhcpan/data", ncpus=args.ncpus)
+    netMHCpan = netMHCpan_launcher(frame, 'MT_Epitope_Seq', 'HLA', args.outfolder, exec_path="netMHCpan", ncpus=args.ncpus)
     netMHCpan.launch()
     netMHCpan_df = netMHCpan.parse_output()
     output_frame = pd.merge(frame, netMHCpan_df, on=['MT_Epitope_Seq', 'HLA'], how='left')

@@ -204,7 +204,8 @@ def create_sequence_dictionary(fasta_file):
     """
     Create index and sequence dictionary for a FASTA file using samtools 
     """
-    dict_file = fasta_file.replace(".fa", ".dict").replace(".fasta", ".dict")
+    dict_file = f"{''.join(fasta_file.split('.')[:-1])}.dict" 
+    fasta_file.replace(".fa", ".dict").replace(".fasta", ".dict")
     index_file = fasta_file + ".fai"
     for file in [dict_file, index_file]:
         if os.path.isfile(file):

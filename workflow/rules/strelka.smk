@@ -24,7 +24,7 @@ rule Strelka_prep:
         ),
     conda:
         "../envs/strelka2.yml"
-    container: "docker://swantonlab/strelka2"
+    container: "docker://ctglabcnr/strelka2"
     
     log:
         os.path.join(

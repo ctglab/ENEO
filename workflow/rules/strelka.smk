@@ -11,6 +11,7 @@ rule Strelka_prep:
         os.path.join(
             config["OUTPUT_FOLDER"],
             config["datadirs"]["VCF_out"],
+            "strelka",
             "{patient}_workflow",
             "runWorkflow.py",
         ),
@@ -20,6 +21,7 @@ rule Strelka_prep:
         runDir=os.path.join(
             config["OUTPUT_FOLDER"],
             config["datadirs"]["VCF_out"],
+            "strelka",
             "{patient}_workflow",
         ),
     conda:
@@ -53,6 +55,7 @@ rule Strelka2:
         script=os.path.join(
             config["OUTPUT_FOLDER"],
             config["datadirs"]["VCF_out"],
+            "strelka",
             "{patient}_workflow",
             "runWorkflow.py",
         ),
@@ -65,18 +68,22 @@ rule Strelka2:
         os.path.join(
             config["OUTPUT_FOLDER"],
             config["datadirs"]["VCF_out"],
+            "strelka",
             "{patient}_workflow",
             "results/variants/variants.vcf.gz",
         ),
-        txt=os.path.join(
+        txt=temp(
+            os.path.join(
             config["OUTPUT_FOLDER"],
             config["datadirs"]["VCF_out"],
+            "strelka",
             "{patient}_workflow",
             "results/checkpoint.txt",
+            )
         ),
     params:
         threads=config["params"]["strelka2"]["threads"],
-    container: "docker://swantonlab/strelka2"
+    container: "docker://ctglabcnr/strelka2"
     conda:
         "../envs/strelka2.yml"
     log:
@@ -100,6 +107,7 @@ rule SelectStrelka2Calls:
         vcf=os.path.join(
             config["OUTPUT_FOLDER"],
             config["datadirs"]["VCF_out"],
+            "strelka",
             "{patient}_workflow",
             "results/variants/variants.vcf.gz",
         ),
@@ -110,11 +118,13 @@ rule SelectStrelka2Calls:
         vcf=os.path.join(
             config["OUTPUT_FOLDER"],
             config["datadirs"]["VCF_out"],
+            "strelka",
             "{patient}_strelka2_FILT.vcf.gz",
         ),
         vcf_index=os.path.join(
             config["OUTPUT_FOLDER"],
             config["datadirs"]["VCF_out"],
+            "strelka",
             "{patient}_strelka2_FILT.vcf.gz.tbi",
         ),
     container:

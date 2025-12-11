@@ -34,11 +34,13 @@ rule MergeCalls:
         vcf1=os.path.join(
             config["OUTPUT_FOLDER"],
             config["datadirs"]["VCF_out"],
+            "deepvariant",
             "{patient}_deepvariant_FILT.vcf.gz",
         ),
         vcf2=os.path.join(
             config["OUTPUT_FOLDER"],
             config["datadirs"]["VCF_out"],
+            "strelka",
             "{patient}_strelka2_FILT.vcf.gz",
         ),
         ref_fasta=os.path.abspath(

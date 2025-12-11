@@ -13,11 +13,13 @@ rule DeepVariant:
         vcf=os.path.join(
             config["OUTPUT_FOLDER"],
             config["datadirs"]["VCF_out"],
+            "deepvariant",
             "{patient}_deepvariant.vcf.gz",
         ),
         vcf_index=os.path.join(
             config["OUTPUT_FOLDER"],
             config["datadirs"]["VCF_out"],
+            "deepvariant",
             "{patient}_deepvariant.vcf.gz.tbi",
         ),
     params:
@@ -67,6 +69,7 @@ rule SelectDeepVariantCalls:
         vcf=os.path.join(
             config["OUTPUT_FOLDER"],
             config["datadirs"]["VCF_out"],
+            "deepvariant",
             "{patient}_deepvariant.vcf.gz",
         ),
         giab_intervals=os.path.abspath(
@@ -76,11 +79,13 @@ rule SelectDeepVariantCalls:
         vcf=os.path.join(
             config["OUTPUT_FOLDER"],
             config["datadirs"]["VCF_out"],
+            "deepvariant",
             "{patient}_deepvariant_FILT.vcf.gz",
         ),
         vcf_index=os.path.join(
             config["OUTPUT_FOLDER"],
             config["datadirs"]["VCF_out"],
+            "deepvariant",
             "{patient}_deepvariant_FILT.vcf.gz.tbi",
         ),
     container:

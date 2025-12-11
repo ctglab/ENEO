@@ -38,7 +38,7 @@ include: "rules/HLA_typing.smk"
 include: "rules/strelka.smk"
 include: "rules/filter_calls.smk"
 include: "rules/pMHC.smk"
-
+include: "rules/deepvariant.smk"
 
 
 

@@ -1,5 +1,99 @@
 import os
 
+rule createTOML:
+    input:
+        config_main=configpath,
+        toml_template=config["params"]["vcfanno"]["vcfanno_toml"],
+        toml_script=config["params"]["vcfanno"]["toml_script"],
+    output:
+        toml_file=os.path.join(
+            config["OUTPUT_FOLDER"],
+            "vcfanno.toml"
+        ),
+    container:
+        "docker://ctglabcnr/eneo"
+    conda:
+        "../envs/cyvcf2.yml"
+    log:
+        os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["logs"]["annotate_variants"],
+            "toml.log"
+        ),
+    resources:
+        runtime="20m",
+        ncpus=1,
+        mem="1G",
+    shell:
+        """
+        python3 {input.toml_script} -y {input.config_main} -t {input.toml_template} -o {output.toml_file}
+        """
+
+rule MergeCalls:
+    input:
+        vcf1=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["VCF_out"],
+            "deepvariant",
+            "{patient}_deepvariant_FILT.vcf.gz",
+        ),
+        vcf2=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["VCF_out"],
+            "strelka",
+            "{patient}_strelka2_FILT.vcf.gz",
+        ),
+        ref_fasta=os.path.abspath(
+            config["resources"]["genome"]
+        ),
+    output:
+        vcf=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["VCF_out"],
+            "{patient}_merged_calls.vcf.gz",
+        ),
+        vcf_index=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["VCF_out"],
+            "{patient}_merged_calls.vcf.gz.tbi",
+        ),
+    params:
+        tmp_dv = os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["VCF_out"],
+            "{patient}_deepvariant_tmp.vcf.gz",
+        ),
+        tmp_strelka = os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["VCF_out"],  
+            "{patient}_strelka2_tmp.vcf.gz",
+        ),
+    container:
+        "docker://ctglabcnr/eneo"
+    conda:
+        "../envs/samtools.yml"
+    threads: config["params"]["samtools"]["threads"]
+    log:
+        os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["logs"]["snv_calling"],
+            "{patient}_merge_calls.log",
+        ),
+    resources:
+        runtime="20m",
+        ncpus=2,
+        mem="8G",
+    shell:
+        """
+        bcftools norm -f {input.ref_fasta} -m -both {input.vcf1} -Oz -o {params.tmp_dv}
+        bcftools norm -f {input.ref_fasta} -m -both {input.vcf2} -Oz -o {params.tmp_strelka}
+        tabix -p vcf {params.tmp_dv}
+        tabix -p vcf {params.tmp_strelka}
+        bcftools isec -n=2 -w2 {params.tmp_dv} {params.tmp_strelka} -Oz -o {output.vcf}
+        tabix -p vcf {output.vcf}
+        rm {params.tmp_dv} {params.tmp_dv}.tbi {params.tmp_strelka} {params.tmp_strelka}.tbi
+        """
+
 
 rule vcfanno:
     input:
@@ -9,10 +103,12 @@ rule vcfanno:
         vcf=os.path.join(
             config["OUTPUT_FOLDER"],
             config["datadirs"]["VCF_out"],
-            "{patient}_workflow",
-            "results",
-            "variants",
-            "variants.vcf.gz"
+            "{patient}_merged_calls.vcf.gz",
+        ),
+        vcf_index=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["VCF_out"],
+            "{patient}_merged_calls.vcf.gz.tbi",
         ),
     output:
         vcf=temp(
@@ -44,92 +140,13 @@ rule vcfanno:
         runtime="60m",
         ncpus=4,
         mem="16G",
-    container:
-        "docker://ctglabcnr/eneo"
-    conda:
-        "../envs/vep.yml"
+    container: "docker://ctglabcnr/eneo"
+    conda: "../envs/vep.yml"
     shell:
         """
-        {params.vcfanno_binary} -lua {params.lua} -p {threads} {params.extra} {input.toml_file} {input.vcf} |\
-        bgzip -c > {output.vcf}
+        {params.vcfanno_binary} -lua {params.lua} -p {threads} {params.extra} \
+            {input.toml_file} {input.vcf} | bgzip -c > {output.vcf}
         tabix -p vcf {output.vcf}
-        """
-
-
-rule filtercalls:
-    input:
-        vcf=os.path.join(
-            config["OUTPUT_FOLDER"],
-            config["datadirs"]["VCF_out"],
-            "{patient}_annot.vcf.gz"
-        ),
-        giab_intervals=config["resources"]["giab_intervals"],
-    output:
-        vcf=temp(
-            os.path.join(
-                config["OUTPUT_FOLDER"],
-                config["datadirs"]["VCF_out"],
-                "{patient}_DP_filt.vcf.gz"
-            )
-        ),
-        index=temp(
-            os.path.join(
-                config["OUTPUT_FOLDER"],
-                config["datadirs"]["VCF_out"],
-                "{patient}_DP_filt.vcf.gz.tbi"
-            )
-        ),
-    container:
-        "docker://ctglabcnr/eneo"
-    conda:
-        "../envs/samtools.yml"
-    threads: config["params"]["samtools"]["threads"]
-    log:
-        os.path.join(
-            config["OUTPUT_FOLDER"],
-            config["datadirs"]["logs"]["annotate_variants"],
-            "{patient}_bcftools.log"
-        ),
-    resources:
-        runtime="20m",
-        ncpus=2,
-        mem="8G",
-    shell:
-        """
-        bcftools view -e "GT='mis'" {input.vcf} |\
-         bcftools view -i "FILTER='PASS' & (DP > 5) & (FORMAT/AD[0:1] > 2)" --threads {threads} | bedtools intersect -header -v -a stdin -b {input.giab_intervals} \
-         -sorted | bgzip -c > {output.vcf}
-        tabix -p vcf {output.vcf}
-        """
-
-
-rule createTOML:
-    input:
-        config_main=configpath,
-        toml_template=config["params"]["vcfanno"]["vcfanno_toml"],
-        toml_script=config["params"]["vcfanno"]["toml_script"],
-    output:
-        toml_file=os.path.join(
-            config["OUTPUT_FOLDER"],
-            "vcfanno.toml"
-        ),
-    container:
-        "docker://ctglabcnr/eneo"
-    conda:
-        "../envs/cyvcf2.yml"
-    log:
-        os.path.join(
-            config["OUTPUT_FOLDER"],
-            config["datadirs"]["logs"]["annotate_variants"],
-            "toml.log"
-        ),
-    resources:
-        runtime="20m",
-        ncpus=1,
-        mem="1G",
-    shell:
-        """
-        python3 {input.toml_script} -y {input.config_main} -t {input.toml_template} -o {output.toml_file}
         """
 
 
@@ -138,12 +155,7 @@ rule germProb:
         vcf=os.path.join(
             config["OUTPUT_FOLDER"],
             config["datadirs"]["VCF_out"],
-            "{patient}_DP_filt.vcf.gz"
-        ),
-        index=os.path.join(
-            config["OUTPUT_FOLDER"],
-            config["datadirs"]["VCF_out"],
-            "{patient}_DP_filt.vcf.gz.tbi"
+            "{patient}_annot.vcf.gz"
         ),
         script=germProb_script,
     output:
@@ -153,9 +165,14 @@ rule germProb:
             config["datadirs"]["VCF_out"],
             "{patient}_annot_germProb.vcf.gz"
         )),
+        vcf_idx=temp(
+            os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["VCF_out"],
+            "{patient}_annot_germProb.vcf.gz.tbi"
+        )),
     container: "docker://ctglabcnr/eneo"
-    conda:
-        "../envs/cyvcf2.yml"
+    conda: "../envs/cyvcf2.yml"
     log:
         os.path.join(
             config["OUTPUT_FOLDER"],
@@ -169,37 +186,5 @@ rule germProb:
     shell:
         """
         python3 {input.script} {input.vcf} {output.vcf}
-        """
-
-
-rule indexgermProb:
-    input:
-        vcf=os.path.join(
-            config["OUTPUT_FOLDER"],
-            config["datadirs"]["VCF_out"],
-            "{patient}_annot_germProb.vcf.gz"
-        ),
-    output:
-        index=temp(os.path.join(
-            config["OUTPUT_FOLDER"],
-            config["datadirs"]["VCF_out"],
-            "{patient}_annot_germProb.vcf.gz.tbi"
-        )),
-    container:
-        "docker://ctglabcnr/eneo"
-    conda:
-        "../envs/vep.yml"
-    log:
-        os.path.join(
-            config["OUTPUT_FOLDER"],
-            config["datadirs"]["logs"]["annotate_variants"],
-            "{patient}_idxgermProb.log"
-        ),
-    resources:
-        runtime="20m",
-        ncpus=1,
-        mem="4G",
-    shell:
-        """
-        tabix -p vcf {input.vcf}
+        tabix -p vcf {output.vcf}
         """

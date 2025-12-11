@@ -36,21 +36,17 @@ params:
   BQSR:
     RAM: 30000
     threads: 4
-  MarkDuplicates:
-    RAM: 30000
+  deepvariant:
     threads: 4
-  STAR:
-    RAM: null
-    extra: '--twopassMode Basic --outSAMtype BAM Unsorted --readFilesCommand zcat '
-    threads: 12
-  SplitNCigarReads:
-    RAM: 30000
-    threads: 4
+    extra: "split_skip_reads=true,channels=''"
   gatk:
     RAM: 20
     extra:
       RGPU: unit1
       RGSM: 20
+  MarkDuplicates:
+    RAM: 30000
+    threads: 4
   pMHC:
     calibration_frame: workflow/supplementary_res/optimal_percentile_netmhcpan.csv
     filter_peptides_script: workflow/scripts/filter_peptides.py
@@ -59,6 +55,13 @@ params:
     max_length: 12
     min_length: 8
     netmhcpan_launcher_script: workflow/scripts/netmhcpan_launcher.py
+    threads: 4
+  STAR:
+    RAM: null
+    extra: '--twopassMode Basic --outSAMtype BAM Unsorted --readFilesCommand zcat '
+    threads: 12
+  SplitNCigarReads:
+    RAM: 30000
     threads: 4
   salmon:
     RAM: null
@@ -84,26 +87,28 @@ params:
   vep:
     extra:
       assembly: GRCh38
-      filtering: --gencode_basic --pick --af --check_existing --coding_only --format vcf --vcf --symbol --terms SO --no_intergenic --tsl
+      filtering: --gencode_basic --pick --af --check_existing --coding_only --format
+        vcf --vcf --symbol --terms SO --no_intergenic --tsl
       plugins:
         Frameshift: workflow/utils/vep_plugins/Frameshift.pm
         Wildtype: workflow/utils/vep_plugins/Wildtype.pm
 resources:
-  REDI: /path/to/REDI_portal.BED.gz
-  dbsnps: /path/to/freq_withAF.vcf.gz
-  genome: /path/to/GRCh38.p14.genome.fa
+  dbsnps: path/to/dbsnps_withAF.vcf.gz
+  deepvariant_rna_model: path/to/deepvariant_rna_model
+  genome: path/to/GRCh38_GIABv3_no_alt_analysis_set_maskedGRC_decoys_MAP2K3_KMT2C_KCNJ18.fasta
   germline_prob_script: workflow/scripts/germProb.py
   giab_intervals: workflow/supplementary_res/GRCh38_giab_merged.bed.gz
-  gnomad: /path/to/af-only-gnomad.hg38.vcf.gz
-  gsnps: /path/to/1000G_phase1.snps.high_confidence.hg38.vcf.gz
-  gtf: /path/to/gencode.v47.primary_assembly.annotation.gtf.gz
+  gnomad: path/to/af-only-gnomad.hg38.vcf.gz
+  gsnps: path/to/1000G_phase1.snps.high_confidence.hg38.vcf.gz
+  gtf: path/to/gencode.v47.primary_assembly.annotation.gtf
   hla_script: workflow/scripts/HLA_typing.py
-  indel: /path/to/Homo_sapiens_assembly38.known_indels.vcf.gz
+  indel: path/to/Homo_sapiens_assembly38.known_indels.vcf.gz
   intervals_coding: workflow/supplementary_res/intervals_coding.BED.gz
-  PoN: /path/to/1000g_PoN.vcf.gz
+  PoN: path/to1000g_pon.hg38.vcf.gz
+  REDI: path/to/REDI.BED.gz
   rna_errors_script: workflow/scripts/filter_rna_errors.py
   t1k_file: workflow/supplementary_res/hlaidx_rna_seq.fa
   toml_script: workflow/scripts/createTOML.py
-  transcriptome: /path/to/gencode.v47.transcripts.fa.gz
-  vep_cache: /path/to/homo_sapiens_vep_105_GRCh38
+  transcriptome: path/to/gencode.v47.transcripts.fa
+  vep_cache: path/to/homo_sapiens_vep_105_GRCh38
 slurm_log_dir: slurm-logs

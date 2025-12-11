@@ -37,6 +37,9 @@ params:
   BQSR:
     RAM: 30000
     threads: 4
+  deepvariant:
+    extra: "split_skip_reads=true,channels=''" 
+    threads: 4
   gatk:
     RAM: 20
     extra:
@@ -91,6 +94,7 @@ params:
         Wildtype: ../workflow/utils/vep_plugins/Wildtype.pm
 resources:
   cosmic: "test_data/cosmic_chr6.vcf.gz"
+  deepvariant_rna_model: "../workflow/supplementary_res/deepvariant_model"
   dbsnps: "test_data/dbsnpALFA_chr6.vcf.gz"
   genome: "test_data/genome_chr6.fa.gz"
   germline_prob_script: "../workflow/scripts/germProb.py"

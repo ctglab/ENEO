@@ -17,7 +17,7 @@
     },
     "REDI": {
         "filetype": "table",
-        "url": "http://srv00.recas.ba.infn.it/webshare/ATLAS/download/TABLE1_hg38_v3.txt.gz" 
+        "url": "http://rediportal.cloud.ba.infn.it/download/TABLE1_hg38_v3.txt.gz" 
     },
     "genome": {
         "filetype": "fasta",
@@ -38,5 +38,14 @@
     "PoN": {
         "filetype": "VCF",
         "url": "https://storage.googleapis.com/gatk-best-practices/somatic-hg38/1000g_pon.hg38.vcf.gz"
+    },
+    "deepvariant_rna_model": {
+        "filetype": "model",
+        "url": [
+            "https://storage.googleapis.com/deepvariant/models/DeepVariant/1.4.0/DeepVariant-inception_v3-1.4.0+data-rnaseq_standard/model.ckpt.data-00000-of-00001",
+            "https://storage.googleapis.com/deepvariant/models/DeepVariant/1.4.0/DeepVariant-inception_v3-1.4.0+data-rnaseq_standard/model.ckpt.example_info.json",
+            "https://storage.googleapis.com/deepvariant/models/DeepVariant/1.4.0/DeepVariant-inception_v3-1.4.0+data-rnaseq_standard/model.ckpt.index",
+            "https://storage.googleapis.com/deepvariant/models/DeepVariant/1.4.0/DeepVariant-inception_v3-1.4.0+data-rnaseq_standard/model.ckpt.meta"
+        ]
     }
 }

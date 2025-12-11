@@ -32,7 +32,7 @@ rule annotate_variants:
     params:
         assembly=config["params"]["vep"]["extra"]["assembly"],
         filtering=config["params"]["vep"]["extra"]["filtering"],
-        cache=lambda wc, input: "--database" if config['execution_mode'] == 'CI' else f"--offline --cache --dir_cache {os.path.dirname(input.cache)}",
+        cache=lambda wc, input: "--database" if config['execution_mode'] == 'CI' else f"--offline --cache --dir_cache {os.path.abspath(input.cache)}",
         plugin_dir=lambda wc, input: os.path.dirname(input.plugin_wt),
     container:
         "docker://ensemblorg/ensembl-vep:release_105.0",

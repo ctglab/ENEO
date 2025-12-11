@@ -2,15 +2,16 @@ import os
 
 rule Strelka_prep:
     input:
-        cram=os.path.join(
+        bam=os.path.join(
             config["OUTPUT_FOLDER"],
             config["datadirs"]["BQSR"],
-            "{patient}_recal.cram",
+            "{patient}_recal.bam"
         ),
     output:
         os.path.join(
             config["OUTPUT_FOLDER"],
             config["datadirs"]["VCF_out"],
+            "strelka",
             "{patient}_workflow",
             "runWorkflow.py",
         ),
@@ -20,12 +21,13 @@ rule Strelka_prep:
         runDir=os.path.join(
             config["OUTPUT_FOLDER"],
             config["datadirs"]["VCF_out"],
+            "strelka",
             "{patient}_workflow",
         ),
-    container:
-        "docker://ctglabcnr/strelka2:latest",
     conda:
         "../envs/strelka2.yml"
+    container: "docker://ctglabcnr/strelka2"
+    
     log:
         os.path.join(
             config["OUTPUT_FOLDER"],
@@ -39,7 +41,7 @@ rule Strelka_prep:
     shell:
         """
         configureStrelkaGermlineWorkflow.py \
-        --bam {input.cram} \
+        --bam {input.bam} \
         --rna \
         --referenceFasta {params.ref_fasta} \
         --callRegions {params.regions} \
@@ -53,26 +55,35 @@ rule Strelka2:
         script=os.path.join(
             config["OUTPUT_FOLDER"],
             config["datadirs"]["VCF_out"],
+            "strelka",
             "{patient}_workflow",
             "runWorkflow.py",
+        ),
+        bam=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["BQSR"],
+            "{patient}_recal.bam"
         ),
     output:
         os.path.join(
             config["OUTPUT_FOLDER"],
             config["datadirs"]["VCF_out"],
+            "strelka",
             "{patient}_workflow",
             "results/variants/variants.vcf.gz",
         ),
-        txt=os.path.join(
+        txt=temp(
+            os.path.join(
             config["OUTPUT_FOLDER"],
             config["datadirs"]["VCF_out"],
+            "strelka",
             "{patient}_workflow",
             "results/checkpoint.txt",
+            )
         ),
     params:
         threads=config["params"]["strelka2"]["threads"],
-    container:
-        "docker://ctglabcnr/strelka2:latest",
+    container: "docker://ctglabcnr/strelka2"
     conda:
         "../envs/strelka2.yml"
     log:
@@ -89,4 +100,53 @@ rule Strelka2:
         """
         {input.script} -m local -j {params.threads}
         echo "finished" > {output.txt}
+        """
+
+rule SelectStrelka2Calls:
+    input:
+        vcf=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["VCF_out"],
+            "strelka",
+            "{patient}_workflow",
+            "results/variants/variants.vcf.gz",
+        ),
+        giab_intervals=os.path.abspath(
+            config["resources"]["giab_intervals"]
+        ),
+    output:
+        vcf=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["VCF_out"],
+            "strelka",
+            "{patient}_strelka2_FILT.vcf.gz",
+        ),
+        vcf_index=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["VCF_out"],
+            "strelka",
+            "{patient}_strelka2_FILT.vcf.gz.tbi",
+        ),
+    container:
+        "docker://ctglabcnr/eneo"
+    conda:
+        "../envs/samtools.yml"
+    threads: config["params"]["samtools"]["threads"]
+    log:
+        os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["logs"]["snv_calling"],
+            "{patient}_select_strelka2_calls.log",
+        ),
+    resources:
+        runtime="20m",
+        ncpus=2,
+        mem="8G",
+    shell:
+        """
+        bcftools view -e "GT='mis'" {input.vcf} |\
+         bcftools view -i "FILTER='PASS' & (DP > 5) & (FORMAT/AD[0:1] > 2)" --threads {threads} | \
+         bedtools intersect -header -v -a stdin -b {input.giab_intervals} -sorted | \
+         bgzip -c > {output.vcf}
+        tabix -p vcf {output.vcf}
         """

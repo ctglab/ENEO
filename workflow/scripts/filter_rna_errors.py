@@ -368,8 +368,6 @@ def main():
     vcf_in.add_filter_to_header(
         {'ID': 'leakage', 'Description': 'Variant is a leakage error', 'Type': 'Flag', 'Number': "1"})
     vcf_in.add_filter_to_header(
-        {'ID': 'low-TLS', 'Description': 'Variant is not in a region with TLS=1', 'Type': 'Flag', 'Number': "1"})
-    vcf_in.add_filter_to_header(
         {'ID': 'splicing', 'Description': f'Variant is too close to splicing site, using distance {args.dist}', 'Type': 'Flag', 'Number': "1"})
     out_vcf = cyvcf2.Writer(args.out, vcf_in)
     for variant in vcf_in:
@@ -387,8 +385,6 @@ def main():
                 splicing_errors
             )) > 0:
                 variant.FILTER = "splicing"
-            elif not pc.is_in_region(variant.CHROM, variant.POS):
-                variant.FILTER = "low-TLS"
             else:
                 variant.FILTER = "PASS"
         out_vcf.write_record(variant)

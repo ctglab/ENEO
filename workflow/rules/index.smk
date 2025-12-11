@@ -1,31 +1,3 @@
-rule fastadict:
-    input:
-        fasta=config["resources"]["genome"],
-    output:
-        decompressed=os.path.abspath(
-            config["resources"]["genome"]).rstrip(".gz"),
-        fasta_dict=os.path.abspath(
-            config['resources']['genome']).rstrip(".gz") + ".dict"
-    container:
-        "docker://broadinstitute/gatk:4.6.0.0"
-    conda:
-        "../envs/gatk.yml"
-    log:
-        os.path.join(
-            config["OUTPUT_FOLDER"],
-            config["datadirs"]["logs"]["intervals"],
-            "fastadict.log"
-        )
-    resources:
-        mem="8G",
-        ncpus=1,
-        runtime="60m",
-    shell:
-        """
-        zcat {input.fasta} > {output.decompressed}
-        gatk CreateSequenceDictionary -R {output.decompressed} -O {output.fasta_dict}
-        """
-
 rule star_index:
     input:
         fasta=os.path.abspath(

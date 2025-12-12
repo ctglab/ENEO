@@ -5,7 +5,8 @@ repo_name: ENEO
 repo_url: https://github.com/ctglab/ENEO
 
 theme:
-  logo: docs/eneo.png
+  logo: assets/eneo.png
+  favicon: assets/eneo.png
   name: material
   font:
     text: Manrope

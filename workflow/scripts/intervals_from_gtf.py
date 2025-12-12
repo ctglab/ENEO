@@ -25,25 +25,12 @@ class GTF_record(object):
             feat_dict = {k:v for k,v in [item.split('=') for item in keyVal]} 
             return feat_dict
         
-    @staticmethod
-    def is_coding(feat_dict: dict) -> bool:
+    @property
+    def is_coding(self) -> bool:
         """
-        Simple check if the given record is protein coding.
-
-        Parameters
-        ----------
-        feat_dict : dict
-            A dictionary of attributes from the GTF record.
-        
-        Returns
-        -------
-        bool
-            True if the record is protein coding, False otherwise.
+        Simple check if the given record is protein coding
         """
-        if feat_dict["gene_biotype"] == 'protein_coding':
-            return True
-        else:
-            return False
+        return self.attributes.get('gene_type') == 'protein_coding'
 
     def asStr(self):
         """
@@ -114,14 +101,14 @@ def main(gtf_file: str, outfile: str):
                     if entry.chromosome not in allowed_chrs:
                         continue
                     else:
-                        if entry.is_coding and entry.feature_type == 'exon':
+                        if all([entry.is_coding, entry.feature_type == 'exon']):
                             # we need also to drop too short exons
                             if entry.length < 10:
                                 continue
                             else:
                                 try:
                                     if entry.attributes['gene_name'] not in genes_to_exclude:
-                                        intervals.add((entry.chromosome, entry.start, entry.end, entry.strand))
+                                        intervals.add((entry.chromosome, entry.start, entry.end, entry.strand, entry.attributes['gene_name']))
                                 except KeyError:
                                     continue
             # cool, write out

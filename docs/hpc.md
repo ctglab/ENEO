@@ -10,7 +10,6 @@ pip install snakemake-executor-plugin-slurm
 
 Then inside the folder `worflow/profile/slurm` you'll find a configuration file named `config.yaml`, where you should add the details about your SLURM account and desired partition.  
 
-
 ## Singularity args
 
 Two rules of the workflow (variant annotation and pMHC binding affinity estimation) depend on Singularity containers. It's key to ensure that all the relevant folders are readable/writable within each container. For this reason, multiple folders are required to be mounted, as Snakemake is *lazy* in assigning mountpoints. 
@@ -30,52 +29,23 @@ Additionally, you had to set the TMPDIR environment variable to the temporary di
 Insert the account and partition inside `workflow/profile/slurm_profile/config.yaml` and any other additional flags required for submitting jobs on the HPC platform in use. 
 
 ``` yaml
-cluster:
-  mkdir -p slurm-logs/{rule} &&
-  sbatch
-    --cpus-per-task={resources.ncpus}
-    --mem={resources.mem}
-    --time={resources.time}
-    --job-name=smk-{rule}-{wildcards}
-    --output=slurm-logs/{rule}/{rule}-{wildcards}-%j.out
-    --partition=<partitionhere>
-    --account=<accounthere>
+executor: slurm
+default-resources:
+    slurm_account: 
+    slurm_partition: 
+    mem_mb_per_cpu: 8000
+    runtime: "60m"
+
+use-apptainer: true
+keep-going: true
+rerun-incomplete: true
+jobs: 100
+singularity-args: '-B /../ENEO_res -B /../ENEO_temp -B /../ENEO_output -B /../ENEO/workflow --env TMPDIR=/../ENEO_temp'
 ```
 
-This will create a folder called `slurm-logs` with a subfolder for each rule, where each patient will have a different log file. 
-
-Then execute the pipeline with
+For additional guidelines on how to compile the profile and how to execute it under the SLURM scheduler, refer to the [executor plugin documentation](https://snakemake.github.io/snakemake-plugin-catalog/plugins/executor/slurm.html) 
 
 ```
 snakemake --profile workflow/profile/slurm_profile
 ```
-
-## SGE
-
-!!! warning
-    The support for SGE is still experimental. If you spot any issue, report it in the Github section
-
-A config file for SGE is under `workflow/profile/sge_profile/config.yaml`. The overall scheme is the following
-
-```yaml
-cluster:
-  mkdir -p sge-logs/{rule} &&
-  qsub
-    -pe smp {resources.ncpus}
-    -l mem_free={resources.mem}
-    -l h_rt={resources.time}
-    -N smk-{rule}-{wildcards}
-    -o sge-logs/{rule}/{rule}-{wildcards}-$JOB_ID.out
-    -e sge-logs/{rule}/{rule}-{wildcards}-$JOB_ID.err
-    -q all.q
-```
-
-The behavior is analogous to the SLURM one. 
-
-To execute the pipeline, run
-
-```
-snakemake --profile workflow/profile/sge_profile
-```
-
 

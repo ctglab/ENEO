@@ -1,3 +1,4 @@
+import sys
 import cyvcf2
 import pandas as pd
 import subprocess
@@ -9,7 +10,15 @@ import re
 import numpy as np
 import shutil
 from multiprocessing import Pool
+import logging
 
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    datefmt="%Y-%m-%d %H:%M:%S",
+    handlers=[
+        logging.StreamHandler(sys.stdout)
+    ])
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -25,16 +34,13 @@ class variantCollector(object):
         self.variants = self._store_variants(vcf_file)
         self.patname = patname 
     
-    def _store_variants(self, vcf_file: cyvcf2.VCF, onlyAutosomicOrSexual=True):
+    def _store_variants(self, vcf_file: cyvcf2.VCF):
         # the objective here is to store variants to associate also 
         # eventual phased variants.
         variants = {}
         for variant in vcf_file:
-            if onlyAutosomicOrSexual:
-                if str(variant.CHROM) in [f"chr{i}" for i in range(23)] + ['X', 'Y']:
-                    variants[f'{variant.CHROM}:{variant.POS}'] = variant
-            else:
-                variants[f'{variant.CHROM}:{variant.POS}'] = variant
+            variants[f'{variant.CHROM}:{variant.POS}'] = variant
+        print(f"Successfully stored {len(variants)} variants")
         return variants
                     
 class variantExtended(object):
@@ -48,8 +54,8 @@ class variantExtended(object):
             try:
                 self.aa_change, self.cdna_change = self._get_changes()
             except KeyError:
-                print(self.csq)
-                exit()
+                logging.warning(f"No valid aa_change found in CSQ field {self.csq}. Exiting..")
+                sys.exit(1)
         else:
             self.aa_change, self.cdna_change = None, None
             self.csq = None
@@ -112,7 +118,7 @@ class variantExtended(object):
                     continue
             mt_seq = self.csq["WildtypeProtein"]
             for edit in edits:
-                mt_seq = mt_seq[:int(edit) - 1] + edits[edit] + self.csq["WildtypeProtein"][int(edit):]
+                mt_seq = mt_seq[:int(edit) - 1] + edits[edit] + mt_seq[int(edit):]
         #now generates frame within the sequence
         index = int(self.csq['Protein_position']) - 1
         for length in range(min_length, max_length + 1):
@@ -131,9 +137,10 @@ class frameGenerator(object):
         self.max_length = max_length
         self.frame = self._generate_frame()
     
-    def _generate_frame(self, germProbthreshold=0.5):
+    def _generate_frame(self):
         frame = []
         for variant in self.collector.variants.values():
+            logging.debug(f"Processing variant {variant}")
             variant_extended = variantExtended(variant)
             if variant_extended.aa_change is not None:
                 wt_seqs, mt_seqs, aa_changes = variantExtended._get_sequences(variant_extended, self.collector)
@@ -143,10 +150,9 @@ class frameGenerator(object):
                     for wt_seq, mt_seq in zip(wt_seqs, mt_seqs):
                         frame.append({'patient': self.collector.patname, 'position': variant_extended.position, 'germProb': variant_extended.germProb, 'WT_Epitope_Seq': wt_seq, 'MT_Epitope_Seq': mt_seq, 'HLA': hla, 'aa_change': aa_change })
         frame = pd.DataFrame(frame)
-        # drop duplicates within the frame
-        frame = frame.drop_duplicates(subset=['MT_Epitope_Seq', 'HLA'])
-        # subset the frame
-        frame = frame[frame['germProb'] <= germProbthreshold]
+        if not frame.empty:
+            # drop duplicates within the frame
+            frame = frame.drop_duplicates(subset=['MT_Epitope_Seq', 'HLA'])
         return frame
     
 def convertHLA_notation(hla: str):
@@ -175,14 +181,34 @@ class launcher(object):
 class netMHCpan_launcher(launcher):
     def __init__(self, inputDf: pd.DataFrame, seqColumn: str, alleleCol: str, outfolder:str,  **kwargs):
         super().__init__(inputDf, seqColumn, alleleCol, outfolder,**kwargs)
-        self.isok = self.ensureConfig()
         self.exec_path = self.params['exec_path']
         self.cmd_params = self.parse_params()
 
     def run_subprocess(self, args):
         exec_path, seqfile, conv_allele, cmd_params, outfile = args
-        with open(outfile, 'w') as ofile:
-            subprocess.run([exec_path, '-p', seqfile, '-a', conv_allele, cmd_params], stdout=ofile)
+        try:
+            with open(outfile, 'w') as ofile:
+                cmd = [exec_path, '-p', seqfile, '-a', conv_allele]
+                if cmd_params:
+                    cmd.extend(cmd_params.split())
+                
+                result = subprocess.run(
+                    cmd,
+                    stdout=ofile,
+                    stderr=subprocess.PIPE,
+                    text=True
+                )
+                
+                if result.returncode != 0:
+                    error_file = outfile.replace('.csv', '.error')
+                    with open(error_file, 'w') as ef:
+                        ef.write(f"Command: {' '.join(cmd)}\n")
+                        ef.write(f"Return code: {result.returncode}\n")
+                        ef.write(f"Stderr: {result.stderr}\n")
+        except Exception as e:
+            error_file = outfile.replace('.csv', '.error')
+            with open(error_file, 'w') as ef:
+                ef.write(f"Exception: {str(e)}\n")
             
     def parse_params(self):
         """
@@ -198,9 +224,10 @@ class netMHCpan_launcher(launcher):
     
     def launch(self):
         # Multiprocessing version
-        print("Executing netmhcpan..")
+        logging.info("Executing netmhcpan..")
         # create the output directory for the results
         start = time.time()
+        logging.debug(f"Creating {self.outfolder}")
         outfolder = self.outfolder
         os.makedirs(outfolder, exist_ok=True)
         # create the input file
@@ -212,10 +239,22 @@ class netMHCpan_launcher(launcher):
         chunks = np.array_split(self.df, n_chunks)
         columns = self.df.columns
         args_list = []
+        try:
+            test_result = subprocess.run(
+                [self.exec_path, '-h'],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+            logging.info(f"netMHCpan executable found: {self.exec_path}")
+        except Exception as e:
+            logging.error(f"Cannot find netMHCpan executable: {e}")
+            sys.exit(1)
         for idx,chunk in enumerate(chunks):
-            print(f"Processing chunk {idx} of {n_chunks}")
+            logging.info(f"Processing chunk {idx} of {n_chunks}")
             chunk = pd.DataFrame(chunk)
             chunk.columns = columns
+            if chunk.empty: continue
             for allele in chunk['mhc'].unique():
                 conv_allele = convertHLA_notation(allele)
                 seqs = chunk[chunk['mhc'] == allele]['pep']         
@@ -235,6 +274,11 @@ class netMHCpan_launcher(launcher):
         """
         temp_dest_path = os.path.join(self.outfolder, 'temp')
         files_to_parse = glob.glob(temp_dest_path+'/*_results*.csv')
+        if len(files_to_parse) == 0:
+            logging.error(f"No files found for parsing. The execution of netMHCpan was not correct.")
+            print(os.listdir(os.path.abspath(temp_dest_path)))
+            sys.exit(1)
+        logging.info(f"Start parsing of {files_to_parse}")
         dest_df = pd.DataFrame()
         # get alleles and batches all together
         alleles = list(set([x.split('/')[-1].split('_')[0] for x in files_to_parse]))
@@ -243,54 +287,72 @@ class netMHCpan_launcher(launcher):
             # subset files
             subset_files = [x for x in files_to_parse if allele in x]
             outfile = os.path.join(self.outfolder, f'{allele}.csv')
-            with open(outfile, 'w') as ofile:
-                for f in subset_files:
-                    # get the batch number
-                    batch_i = f.split('/')[-1].split('_')[-1].split('.')[0]
-                    original_input = os.path.join(self.outfolder, 'temp', f'{allele}_batch_{batch_i}.csv')
-                    # get the number of sequences
-                    num_seqs = 0
-                    with open(original_input, 'r') as original_iput:
-                        num_seqs = len(original_iput.readlines())
-                    with open(f, 'r') as infile:
-                        good_header = 0
-                        bad_header = 0
-                        for idx,line in enumerate(infile):
-                            # remove whitespaces and replace with commas
-                            edited_line = re.sub(r'\s+', ',', line.strip())
-                            if edited_line.startswith('Pos'):
-                                # good. this is the header.
-                                # plus one because of the empty line
-                                good_header = idx
-                                bad_header = idx + num_seqs + 1
-                                ofile.write(edited_line + '\n')
-                            elif idx > good_header and idx <= bad_header:
-                                if not line.startswith('-'):
-                                    # some lines are offending for the parsing. Damn how on hell someone 
-                                    # can write output file like this one?
-                                    if len(edited_line.split(',')) == 15:
-                                        # the last two field are just the same one, but with a space between.
-                                        # just connect them into a single one
-                                        last_field = ' '.join(edited_line.split(',')[-2:])
-                                        edited_line = ','.join(edited_line.split(',')[0:-2] + [last_field])
+            try:
+                with open(outfile, 'w') as ofile:
+                    for f in subset_files:
+                        # get the batch number
+                        batch_i = f.split('/')[-1].split('_')[-1].split('.')[0]
+                        original_input = os.path.join(self.outfolder, 'temp', f'{allele}_batch_{batch_i}.csv')
+                        
+                        # Check if original input exists (it might have been skipped if chunk was empty)
+                        if not os.path.exists(original_input):
+                            continue
+
+                        # get the number of sequences
+                        num_seqs = 0
+                        with open(original_input, 'r') as original_iput:
+                            num_seqs = len(original_iput.readlines())
+                        
+                        # If result file is empty (netMHCpan failed), skip this file
+                        if os.path.getsize(f) == 0:
+                            logging.warning(f"File {f} is empty. NetMHCpan likely failed for this batch.")
+                            continue
+
+                        with open(f, 'r') as infile:
+                            good_header = 0
+                            bad_header = 0
+                            for idx,line in enumerate(infile):
+                                # remove whitespaces and replace with commas
+                                edited_line = re.sub(r'\s+', ',', line.strip())
+                                if edited_line.startswith('Pos'):
+                                    # good. this is the header.
+                                    # plus one because of the empty line
+                                    good_header = idx
+                                    bad_header = idx + num_seqs + 1
                                     ofile.write(edited_line + '\n')
-                            else:
-                                continue
-            try:
+                                elif idx > good_header and idx <= bad_header:
+                                    if not line.startswith('-'):
+                                        # some lines are offending for the parsing. Damn how on hell someone 
+                                        # can write output file like this one?
+                                        if len(edited_line.split(',')) == 15:
+                                            # the last two field are just the same one, but with a space between.
+                                            # just connect them into a single one
+                                            last_field = ' '.join(edited_line.split(',')[-2:])
+                                            edited_line = ','.join(edited_line.split(',')[0:-2] + [last_field])
+                                        ofile.write(edited_line + '\n')
+                                else:
+                                    continue
+                
+                # Check if the generated outfile has content before reading
+                if os.path.getsize(outfile) == 0:
+                    logging.warning(f"Output for allele {allele} is empty after parsing. Skipping.")
+                    os.remove(outfile)
+                    continue
+
                 df = pd.read_csv(outfile, skipinitialspace=True, index_col=False)
-            except:
-                print("Something went wrong with the allele {}".format(allele))
-                exit()
-            try:
                 dest_df = pd.concat([dest_df, df], ignore_index=True)
                 # then we could remove the file
                 os.remove(outfile)
-            except KeyError:
-                print("Something went wrong with the allele {}".format(allele))
-                exit() 
-        #drop temp 
+            except Exception as e:
+                logging.warning(f"Skipping allele {allele} due to error: {e}")
+                if os.path.exists(outfile):
+                    os.remove(outfile)
+                continue
         shutil.rmtree(temp_dest_path)
-        # os.remove(os.path.join(self.outfolder, 'temp'))
+        if dest_df.empty:
+            logging.warning("No alleles were successfully parsed.")
+            return pd.DataFrame(columns=['MT_Epitope_Seq', 'HLA', 'score_EL_netmhcpan', 'rank_EL_netmhcpan'])
+
         dest_df = dest_df.loc[:,['HLA','Peptide','Score_EL','Rnk_EL']].rename(columns={
             'Peptide': 'MT_Epitope_Seq', 'Score_EL': 'score_EL_netmhcpan', 'Rnk_EL': 'rank_EL_netmhcpan'})   
         return dest_df
@@ -301,8 +363,10 @@ if __name__ == "__main__":
     vcf = cyvcf2.VCF(args.vcf)
     hla = open(args.alleles, 'r').readlines()[0].strip().split(',')
     variants = variantCollector(vcf, patname=args.patient)
-    print(len(variants.variants))
     frame = frameGenerator(hla, variants).frame
+    if len(frame) == 0:
+        logging.info("No variants to be used for generating neoantigens to. Exiting..")
+        sys.exit(0)
     # instantiate the netMHCpan launcher
     netMHCpan = netMHCpan_launcher(frame, 'MT_Epitope_Seq', 'HLA', args.outfolder, exec_path="netMHCpan", ncpus=args.ncpus)
     netMHCpan.launch()

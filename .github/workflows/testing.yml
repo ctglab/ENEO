@@ -15,7 +15,7 @@ jobs:
       uses: actions/checkout@v3
       with:
         submodules: recursive
-        
+
     - name: Setup Apptainer
       uses: eWaterCycle/setup-apptainer@v2
       with:
@@ -37,6 +37,8 @@ jobs:
 
     - name: Test workflow
       uses: snakemake/snakemake-github-action@v1.22.0
+      env:
+        APPTAINER_DISABLE_CACHE: "true"
       with:
         directory: .test
         snakefile: .test/Snakefile

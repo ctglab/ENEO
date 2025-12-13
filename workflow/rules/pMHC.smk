@@ -2,8 +2,16 @@ import os
 
 rule pMHCpeptides:
     input:
-        vcf=os.path.join(config["OUTPUT_FOLDER"], config["datadirs"]["VCF_out"], "{patient}.vep.vcf.gz"),
-        vcf_idx=os.path.join(config["OUTPUT_FOLDER"], config["datadirs"]["VCF_out"], "{patient}.vep.vcf.gz.tbi"),
+       vcf=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["VCF_out"],
+            "{patient}_final_passonly.vcf.gz"
+       ),
+       vcfidx=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["VCF_out"],
+            "{patient}_final_passonly.vcf.gz.tbi"
+        ),        
         hla=os.path.join(config["OUTPUT_FOLDER"], config["datadirs"]["HLA_typing"], "{patient}_allele_input_pvacseq.csv"),
         launcher=config["params"]["pMHC"]["netmhcpan_launcher_script"],
     params:

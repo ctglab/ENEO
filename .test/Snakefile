@@ -42,6 +42,14 @@ rule targets:
             ),
             patient=patients,
         ),
+        expand(
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["peptides"],
+                "{patient}.filtered_epitopes.csv"
+                ),
+            patient=patients,
+        ),
 
 
 include: "../workflow/rules/index.smk"
@@ -53,3 +61,5 @@ include: "../workflow/rules/HLA_typing.smk"
 include: "../workflow/rules/strelka.smk"
 include: "../workflow/rules/annotate_variants.smk"
 include: "../workflow/rules/filter_calls.smk"
+include: "../workflow/rules/deepvariant.smk"
+include: "../workflow/rules/pMHC.smk"

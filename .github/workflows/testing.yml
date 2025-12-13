@@ -11,6 +11,18 @@ jobs:
   Testing:
     runs-on: ubuntu-latest
     steps:
+    # --- FIX FOR DISK SPACE ---
+    - name: Free Disk Space (Ubuntu)
+      uses: jlumbroso/free-disk-space-action@v1.3.1
+      with:
+        tool-cache: true
+        android: true
+        dotnet: true
+        haskell: true
+        large-packages: true
+        docker-images: true
+        swap-storage: true
+        
     - name: Checkout repository with submodules
       uses: actions/checkout@v3
       with:
@@ -38,6 +50,7 @@ jobs:
     - name: Test workflow
       uses: snakemake/snakemake-github-action@v1.22.0
       env:
+
         APPTAINER_DISABLE_CACHE: "true"
       with:
         directory: .test

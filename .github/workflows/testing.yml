@@ -15,10 +15,29 @@ jobs:
       uses: actions/checkout@v3
       with:
         submodules: recursive
+        
+    - name: Setup Apptainer
+      uses: eWaterCycle/setup-apptainer@v2
+      with:
+        apptainer-version: '1.2.5'
+
+    - name: Prepare Test Data and Models
+      run: |
+        gzip -d .test/test_data/chr6_cdna.fa.gz
+        gzip -d .test/test_data/genome_chr6.fa.gz
+        mv .test/test_data/genome_chr6.fa.gz.fai .test/test_data/genome_chr6.fa.fai
+        mkdir -p workflow/supplementary_res/deepvariant_rna_model
+        BASE_URL="https://storage.googleapis.com/deepvariant/models/DeepVariant/1.4.0/DeepVariant-inception_v3-1.4.0+data-rnaseq_standard"
+        wget -q -P workflow/supplementary_res/deepvariant_rna_model "$BASE_URL/model.ckpt.data-00000-of-00001"
+        wget -q -P workflow/supplementary_res/deepvariant_rna_model "$BASE_URL/model.ckpt.example_info.json"
+        wget -q -P workflow/supplementary_res/deepvariant_rna_model "$BASE_URL/model.ckpt.index"
+        wget -q -P workflow/supplementary_res/deepvariant_rna_model "$BASE_URL/model.ckpt.meta"
+        echo "Files in deepvariant_rna_model:"
+        ls -l workflow/supplementary_res/deepvariant_rna_model/
+
     - name: Test workflow
       uses: snakemake/snakemake-github-action@v1.22.0
       with:
         directory: .test
         snakefile: .test/Snakefile
-        args: "--configfile .test/config/config.yaml --use-conda --show-failed-logs --cores 2 --conda-cleanup-pkgs cache"
-    
+        args: "--configfile .test/config/config.yaml --use-apptainer --show-failed-logs --cores 2"

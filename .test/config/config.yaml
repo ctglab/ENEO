@@ -56,7 +56,7 @@ params:
     filter_peptides_script: ../workflow/scripts/filter_peptides.py
     min_length: 8
     max_length: 12
-    germProb: 0.5
+    germProb: 1
   salmon:
     RAM: null
     extra:
@@ -94,9 +94,9 @@ params:
         Wildtype: ../workflow/utils/vep_plugins/Wildtype.pm
 resources:
   cosmic: "test_data/cosmic_chr6.vcf.gz"
-  deepvariant_rna_model: "../workflow/supplementary_res/deepvariant_model"
+  deepvariant_rna_model: "../workflow/supplementary_res/deepvariant_rna_model"
   dbsnps: "test_data/dbsnpALFA_chr6.vcf.gz"
-  genome: "test_data/genome_chr6.fa.gz"
+  genome: "test_data/genome_chr6.fa"
   germline_prob_script: "../workflow/scripts/germProb.py"
   giab_intervals: "../workflow/supplementary_res/GRCh38_giab_merged.bed.gz"
   gnomad: "test_data/gnomad_chr6.vcf.gz"
@@ -110,7 +110,7 @@ resources:
   t1k_file: "../workflow/supplementary_res/hlaidx_rna_seq.fa"
   toml_script: "../workflow/scripts/createTOML.py"
   rna_errors_script: "../workflow/scripts/filter_rna_errors.py"
-  transcriptome: "test_data/chr6_cdna.fa.gz"
+  transcriptome: "test_data/chr6_cdna.fa"
   vcfanno_binary: "../workflow/utils/vcfanno_linux64"
   vcfanno_lua: "../workflow/utils/custom.lua"
   vcfanno_toml: "../workflow/utils/vcfanno.toml"

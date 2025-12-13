@@ -10,10 +10,14 @@ on:
 jobs:
   Testing:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0} # Required for Conda environments to activate properly
+        
     steps:
-    # --- FIX FOR DISK SPACE ---
+    # 1. Clear disk space (Crucial for Apptainer + DeepVariant)
     - name: Free Disk Space (Ubuntu)
-      uses: jlumbroso/free-disk-space@main
+      uses: jlumbroso/free-disk-space-action@v1.3.1
       with:
         tool-cache: true
         android: true
@@ -22,37 +26,64 @@ jobs:
         large-packages: true
         docker-images: true
         swap-storage: true
-        
-    - name: Checkout repository with submodules
+
+    - name: Checkout repository
       uses: actions/checkout@v3
       with:
         submodules: recursive
 
+    # 2. Install Apptainer on the Host
     - name: Setup Apptainer
       uses: eWaterCycle/setup-apptainer@v2
       with:
         apptainer-version: '1.2.5'
 
+    # 3. Install Snakemake using Mamba (Faster/Native approach)
+    - name: Setup Mamba/Conda and Install Snakemake
+      uses: conda-incubator/setup-miniconda@v3
+      with:
+        miniforge-version: latest
+        activate-environment: snakemake
+        # Installing snakemake directly here
+        environment-config: >
+          name: snakemake
+          channels:
+            - conda-forge
+            - bioconda
+            - nodefaults
+          dependencies:
+            - snakemake
+            - python=3.10
+
+    # 4. Prepare your data (Files & Downloads)
     - name: Prepare Test Data and Models
       run: |
         gzip -d .test/test_data/chr6_cdna.fa.gz
         gzip -d .test/test_data/genome_chr6.fa.gz
         mv .test/test_data/genome_chr6.fa.gz.fai .test/test_data/genome_chr6.fa.fai
+        
         mkdir -p workflow/supplementary_res/deepvariant_rna_model
         BASE_URL="https://storage.googleapis.com/deepvariant/models/DeepVariant/1.4.0/DeepVariant-inception_v3-1.4.0+data-rnaseq_standard"
+        
         wget -q -P workflow/supplementary_res/deepvariant_rna_model "$BASE_URL/model.ckpt.data-00000-of-00001"
         wget -q -P workflow/supplementary_res/deepvariant_rna_model "$BASE_URL/model.ckpt.example_info.json"
         wget -q -P workflow/supplementary_res/deepvariant_rna_model "$BASE_URL/model.ckpt.index"
         wget -q -P workflow/supplementary_res/deepvariant_rna_model "$BASE_URL/model.ckpt.meta"
-        echo "Files in deepvariant_rna_model:"
-        ls -l workflow/supplementary_res/deepvariant_rna_model/
+        
+        echo "Data preparation complete."
 
+    # 5. Run Snakemake directly
     - name: Test workflow
-      uses: snakemake/snakemake-github-action@v1.22.0
       env:
-
+        # Save disk space by preventing Apptainer from caching the huge SIF files
         APPTAINER_DISABLE_CACHE: "true"
-      with:
-        directory: .test
-        snakefile: .test/Snakefile
-        args: "--configfile .test/config/config.yaml --use-apptainer --show-failed-logs --cores 2"
+      run: |
+        snakemake \
+          --directory .test \
+          --snakefile .test/Snakefile \
+          --configfile .test/config/config.yaml \
+          --use-apptainer \
+          --use-conda \
+          --show-failed-logs \
+          --cores 2 \
+          --conda-cleanup-pkgs cache

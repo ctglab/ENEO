@@ -32,7 +32,10 @@ def parse_args():
 class variantCollector(object):
     def __init__(self, vcf_file: cyvcf2.VCF, patname) -> None:
         self.variants = self._store_variants(vcf_file)
-        self.patname = patname 
+        self.patname = patname
+        self._csq_keys = [
+            j.strip() for j in vcf_file.get_header_type('CSQ')['Description'].replace('"','').split('Format: ')[1].split('|')
+        ]
     
     def _store_variants(self, vcf_file: cyvcf2.VCF):
         # the objective here is to store variants to associate also 
@@ -44,13 +47,13 @@ class variantCollector(object):
         return variants
                     
 class variantExtended(object):
-    def __init__(self, variant: cyvcf2.Variant):
-        csq_keys = ["Allele","Consequence","IMPACT","SYMBOL","Gene","Feature_type","Feature","BIOTYPE","EXON","INTRON","HGVSc","HGVSp","cDNA_position","CDS_position","Protein_position","Amino_acids","Codons","Existing_variation","DISTANCE","STRAND","FLAGS","SYMBOL_SOURCE","HGNC_ID","TSL","FrameshiftSequence","WildtypeProtein"]
+    def __init__(self, variant: cyvcf2.Variant, csq_keys: list):
+        self._csq_keys = csq_keys 
         self.variant = variant
         self.position = f"{self.variant.CHROM}:{self.variant.POS}-{self.variant.POS + 1}"
         self.germProb = 1 - self.variant.INFO.get('somProb')
         if self.variant.INFO.get('CSQ') is not None:
-            self.csq = dict(zip(csq_keys, self.variant.INFO.get('CSQ').split('|')))
+            self.csq = dict(zip(self._csq_keys, self.variant.INFO.get('CSQ').split('|')))
             try:
                 self.aa_change, self.cdna_change = self._get_changes()
             except KeyError:
@@ -105,7 +108,7 @@ class variantExtended(object):
             for phased_var in self.phased_variants:
                 try:
                     phased_variant = collector.variants[phased_var]
-                    phased_variant_extended = variantExtended(phased_variant)
+                    phased_variant_extended = variantExtended(phased_variant, collector._csq_keys)
                     # not all the variants have an impact on the aa sequence
                     if phased_variant_extended.aa_change is not None:
                         edits[phased_variant_extended.csq['Protein_position']] = phased_variant_extended.csq['Amino_acids'].split('/')[1]
@@ -141,7 +144,7 @@ class frameGenerator(object):
         frame = []
         for variant in self.collector.variants.values():
             logging.debug(f"Processing variant {variant}")
-            variant_extended = variantExtended(variant)
+            variant_extended = variantExtended(variant, self.collector._csq_keys)
             if variant_extended.aa_change is not None:
                 wt_seqs, mt_seqs, aa_changes = variantExtended._get_sequences(variant_extended, self.collector)
                 # concatenate as a single string the aa_change

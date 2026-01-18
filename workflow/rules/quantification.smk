@@ -21,6 +21,7 @@ rule salmon_quantification:
             config["datadirs"]["salmon_quant"],
             "{patient}",
         ),
+        reads=lambda wildcards, input: f"-1 {input.r1} -2 {input.r2}" if hasattr(input, 'r2') else f"-r {input.r1}",
     threads: config["params"]["salmon"]["threads"]
     resources:
         runtime="60m",
@@ -38,7 +39,7 @@ rule salmon_quantification:
         ),
     shell:
         """
-        salmon quant -l {params.libtype} -i {params.index} -1 {input.r1} -2 {input.r2} -p {threads} -o {params.outdir}
+        salmon quant -l {params.libtype} -i {params.index} {params.reads} -p {threads} -o {params.outdir}
         """
 
 

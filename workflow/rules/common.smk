@@ -59,8 +59,27 @@ def sample_from_patient(df, patient_list, condition):
 def get_bam(wildcards):
     return {'bam': units.loc[wildcards.patient, 'bam']}
 
+
+def is_single_end(patient):
+    """Check if a sample is single-end (fq2 is empty or NaN)"""
+    fq2 = units.loc[patient, "fq2"]
+    return pd.isna(fq2) or fq2 == ""
+
+
+def get_pe_patients():
+    """Return list of paired-end patients"""
+    return [p for p in patients if not is_single_end(p)]
+
+
+def get_se_patients():
+    """Return list of single-end patients"""
+    return [p for p in patients if is_single_end(p)]
+
+
 def get_fastq(wildcards):
     """Return a dict where keys are read1/2 and values are list of files"""
+    if is_single_end(wildcards.patient):
+        return {"r1": units.loc[wildcards.patient, "fq1"]}
     return {
         "r1": units.loc[wildcards.patient, "fq1"],
         "r2": units.loc[wildcards.patient, "fq2"],

@@ -1,8 +1,12 @@
 # experimental execution of different paths based on .fastq.gz input or .bam
 
-rule genotype:
+ruleorder: genotype_pe > genotype_se
+
+
+rule genotype_pe:
     input:
-        unpack(get_fastq),
+        r1=lambda wc: units.loc[wc.patient, "fq1"],
+        r2=lambda wc: units.loc[wc.patient, "fq2"],
         idx=config["resources"]["t1k_file"],
     output:
         temp(
@@ -73,6 +77,69 @@ rule genotype:
     shell:
         """
         run-t1k -1 {input.r1} -2 {input.r2} --preset hla \
+        -f {input.idx} -t {threads} -o {params.prefix} --od {params.outdir}
+        """
+
+
+rule genotype_se:
+    input:
+        r1=lambda wc: units.loc[wc.patient, "fq1"],
+        idx=config["resources"]["t1k_file"],
+    output:
+        temp(
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["HLA_typing"],
+                "{patient}_aligned_1.fa"
+            )
+        ),
+        temp(
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["HLA_typing"],
+                "{patient}_allele.tsv"
+            )
+        ),
+        temp(
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["HLA_typing"],
+                "{patient}_allele.vcf"
+            )
+        ),
+        temp(
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["HLA_typing"],
+                "{patient}_candidate_1.fq"
+            )
+        ),
+        hla=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["HLA_typing"],
+            "{patient}_genotype.tsv"
+        ),
+    params:
+        prefix="{patient}",
+        outdir=lambda w, output: os.path.dirname(os.path.abspath(output.hla)),
+    container:
+        "docker://ctglabcnr/t1k"
+    conda:
+        "../envs/t1k.yml"
+    threads: config["params"]["t1k"]["threads"]
+    resources:
+        runtime="240m",
+        ncpus=4,
+        mem="32G",
+    log:
+        os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["logs"]["t1k"],
+            "{patient}_se.log"
+        ),
+    shell:
+        """
+        run-t1k -u {input.r1} --preset hla \
         -f {input.idx} -t {threads} -o {params.prefix} --od {params.outdir}
         """
         

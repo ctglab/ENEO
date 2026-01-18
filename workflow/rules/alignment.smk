@@ -20,6 +20,7 @@ rule align:
         extra="--sjdbGTFfile {} {}".format(
             config["resources"]["gtf"], config["params"]["STAR"]["extra"]
         ),
+        reads=lambda wildcards, input: f"{input.r1} {input.r2}" if hasattr(input, 'r2') else f"{input.r1}",
     threads: config["params"]["STAR"]["threads"]
     resources:
         mem="60G",
@@ -33,7 +34,7 @@ rule align:
         ),
     shell:
         """
-        STAR --readFilesIn {input.r1} {input.r2} \
+        STAR --readFilesIn {params.reads} \
         --genomeDir {input.index} --runThreadN {threads} \
         --outFileNamePrefix {params.prefix} {params.extra}
         """

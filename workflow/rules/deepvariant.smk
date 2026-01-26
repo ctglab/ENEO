@@ -46,7 +46,7 @@ rule DeepVariant:
         ),
     resources:
         runtime="480m",
-        ncpus=config["params"]["deepvariant"]["threads"],
+        ncpus=1,
         mem="16G",
     shell:
         """
@@ -101,7 +101,7 @@ rule SelectDeepVariantCalls:
         ),
     resources:
         runtime="20m",
-        ncpus=2,
+        ncpus=1,
         mem="8G",
     shell:
         """

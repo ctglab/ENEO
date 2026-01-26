@@ -41,7 +41,7 @@ rule annotate_variants:
     resources:
         mem="6G",
         runtime="120m",
-        ncpus=2,
+        ncpus=1,
     log:
         os.path.join(
             config["OUTPUT_FOLDER"],
@@ -88,7 +88,7 @@ rule compress_annotated_vcf:
     resources:
         mem="6G",
         runtime="60m",
-        ncpus=2,
+        ncpus=1,
     log:
         os.path.join(
             config["OUTPUT_FOLDER"],
@@ -139,7 +139,7 @@ rule rna_errors:
     resources:
         mem="6G",
         runtime="60m",
-        ncpus=2,
+        ncpus=1,
     log:
         os.path.join(
             config["OUTPUT_FOLDER"],
@@ -189,7 +189,7 @@ rule passonly:
     resources:
         mem="6G",
         runtime="60m",
-        ncpus=2,
+        ncpus=1,
     log:
         os.path.join(
             config["OUTPUT_FOLDER"],

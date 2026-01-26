@@ -62,7 +62,7 @@ rule genotype:
     threads: config["params"]["t1k"]["threads"]
     resources:
         runtime="240m",
-        ncpus=4,
+        ncpus=1,
         mem="32G",
     log:
         os.path.join(
@@ -102,7 +102,7 @@ rule extract_hla:
         ),
     resources:
         runtime="20m",
-        ncpus=2,
+        ncpus=1,
         mem="8G",
     shell:
         "python3 {input.hla_script} {input.genotype} > {output}"

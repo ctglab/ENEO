@@ -94,7 +94,7 @@ rule Strelka2:
         ),
     resources:
         runtime="240m",
-        ncpus=2,
+        ncpus=1,
         mem="16G",
     shell:
         """
@@ -140,7 +140,7 @@ rule SelectStrelka2Calls:
         ),
     resources:
         runtime="20m",
-        ncpus=2,
+        ncpus=1,
         mem="8G",
     shell:
         """

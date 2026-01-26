@@ -4,9 +4,10 @@
 import pandas as pd
 import os
 import glob
+from pathlib import Path
 from snakemake.utils import min_version
 
-min_version("5.9.1")
+min_version("8.0.0")
 
 
 configfile: "config/config.yaml"

@@ -25,7 +25,7 @@ rule AddGrp:
     resources:
         mem="32G",
         runtime="240m",
-        ncpus=4,
+        ncpus=1,
     log:
         os.path.join(
             config["OUTPUT_FOLDER"],
@@ -54,7 +54,7 @@ rule bed_to_intervals:
         "../envs/gatk.yml"
     resources:
         runtime="60m",
-        ncpus=2,
+        ncpus=1,
         mem="8G",
     log:
         os.path.join(
@@ -100,7 +100,7 @@ rule mark_duplicates:
     resources:
         mem="32G",
         runtime="240m",
-        ncpus=4,
+        ncpus=1,
     log:
         os.path.join(
             config["OUTPUT_FOLDER"],
@@ -137,7 +137,7 @@ rule sort_bam_gatk:
         "../envs/samtools.yml"
     resources:
         runtime="120m",
-        ncpus=2,
+        ncpus=1,
         mem="8G",
     log:
         os.path.join(
@@ -172,7 +172,7 @@ rule samtools_index:
         "../envs/samtools.yml"
     resources:
         runtime="60m",
-        ncpus=2,
+        ncpus=1,
         mem="8G",
     log:
         os.path.join(
@@ -222,7 +222,7 @@ rule SplitNCigarReads:
     resources:
         mem="32G",
         runtime="720m",
-        ncpus=4,
+        ncpus=1,
     log:
         os.path.join(
             config["OUTPUT_FOLDER"],

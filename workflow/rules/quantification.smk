@@ -11,6 +11,13 @@ rule salmon_quantification:
             "{patient}",
             "quant.sf",
         ),
+        json=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["salmon_quant"],
+            "{patient}",
+            "aux_info",
+            "meta_info.json"
+        )
     params:
         index=lambda wc, input: os.path.dirname(os.path.abspath(input.index)),
         libtype=config["params"]["salmon"]["extra"]["libtype"],

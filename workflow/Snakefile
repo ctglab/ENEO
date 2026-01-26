@@ -27,8 +27,14 @@ rule targets:
                 ),
             patient=patients,
         ),
+        os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["qc_reports"],
+            "multiqc_report.html"
+        ),
 
 include: "rules/index.smk"
+include: "rules/reads_trimming.smk"
 include: "rules/alignment.smk"
 include: "rules/annotate_variants.smk"
 include: "rules/quantification.smk"
@@ -39,6 +45,7 @@ include: "rules/strelka.smk"
 include: "rules/filter_calls.smk"
 include: "rules/pMHC.smk"
 include: "rules/deepvariant.smk"
+include: "rules/reporting.smk"
 
 
 

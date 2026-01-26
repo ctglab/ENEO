@@ -15,7 +15,7 @@ rule star_index:
         os.path.join(config["datadirs"]["logs"]["star_idx"], "star_idx.log"),
     resources:
         mem="60G",
-        ncpus=8,
+        ncpus=1,
         runtime="360m",
     shell:
         """
@@ -55,7 +55,7 @@ rule salmon_idx:
         extra=config["params"]["salmon"]["extra"]["index"],
     resources:
         mem="40G",
-        ncpus=8,
+        ncpus=1,
         runtime="240m",
     container:
         "docker://combinelab/salmon"

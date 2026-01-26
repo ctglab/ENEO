@@ -97,5 +97,55 @@ def sample_from_patient(df, patient_list, condition):
         )
     return samples
 
+# Build multiqc input list - sortmerna logs only in full mode
+def get_multiqc_inputs():
+    """Generate input files for multiqc based on execution mode."""
+    inputs = {
+        "fastp": expand(
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["trimmed_reads"],
+                "{patient}_fastp.json"
+            ),
+            patient=patients,
+        ),
+        "star": expand(
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["mapped_reads"],
+                "{patient}_Log.final.out"
+            ),
+            patient=patients,
+        ),
+        "markdup": expand(
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["bams"],
+                "{patient}_Aligned.sortedByCoord.out.metrics.txt"
+            ),
+            patient=patients,
+        ),
+        "salmon": expand(
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["salmon_quant"],
+                "{patient}",
+                "aux_info",
+                "meta_info.json"
+            ),
+            patient=patients,
+        ),
+    }
+    # Include sortmerna logs only in full mode
+    if config.get("execution_mode") != "CI":
+        inputs["sortmerna"] = expand(
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["trimmed_reads"],
+                "{patient}_sortmerna.log"
+            ),
+            patient=patients,
+        )
+    return inputs
 
 interval_files = get_interval_files()

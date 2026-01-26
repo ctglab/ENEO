@@ -24,7 +24,7 @@ rule salmon_quantification:
     threads: config["params"]["salmon"]["threads"]
     resources:
         runtime="60m",
-        ncpus=4,
+        ncpus=1,
         mem="32G",
     container:
         "docker://combinelab/salmon"
@@ -79,7 +79,7 @@ rule export_quantification:
         ),
     resources:
         runtime="30m",
-        ncpus=2,
+        ncpus=1,
         mem="8G",
     container:
         "docker://ctglabcnr/tximport"

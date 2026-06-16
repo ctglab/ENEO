@@ -32,6 +32,9 @@ rule salmon_gentrome:
         gentrome=temp(
             os.path.join(config["datadirs"]["salmon_idx"], "gentrome.fa.gz")
         ),
+        decoys=temp(
+            os.path.join(config["datadirs"]["salmon_idx"], "decoys.txt")
+        ),
     log:
         os.path.join(config["datadirs"]["logs"]["salmon_quant"], "gentrome.log"),
     container:
@@ -40,13 +43,19 @@ rule salmon_gentrome:
         "../envs/salmon.yml"
     shell:
         """
-        cat {input.genome} {input.cdna} > {output.gentrome}
+        # Decoy names are the genome sequence ids (first token of each header).
+        grep '^>' {input.genome} | sed 's/^>//' | cut -d ' ' -f1 > {output.decoys}
+        # Decoy-aware gentrome: transcriptome targets first, genome (decoys) last.
+        # GENCODE cdna headers are stripped to the bare transcript id so salmon's
+        # target names match the tx2gene mapping used downstream.
+        cat <(sed -E 's/^>([^|]+).*/>\\1/' {input.cdna}) {input.genome} > {output.gentrome}
         """
 
 
 rule salmon_idx:
     input:
         gentrome=os.path.join(config["datadirs"]["salmon_idx"], "gentrome.fa.gz"),
+        decoys=os.path.join(config["datadirs"]["salmon_idx"], "decoys.txt"),
     output:
         out=os.path.join(config["datadirs"]["salmon_idx"], "ctable.bin"),
     threads: config["params"]["salmon"]["threads"]
@@ -65,5 +74,5 @@ rule salmon_idx:
         os.path.join(config["datadirs"]["logs"]["salmon_quant"], "index.log"),
     shell:
         """
-        salmon index -t {input.gentrome} -i {params.outdir} {params.extra}
+        salmon index -t {input.gentrome} -d {input.decoys} -i {params.outdir} -p {threads} {params.extra}
         """

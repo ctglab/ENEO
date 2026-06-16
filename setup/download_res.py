@@ -204,8 +204,7 @@ def create_sequence_dictionary(fasta_file):
     """
     Create index and sequence dictionary for a FASTA file using samtools 
     """
-    dict_file = f"{''.join(fasta_file.split('.')[:-1])}.dict" 
-    fasta_file.replace(".fa", ".dict").replace(".fasta", ".dict")
+    dict_file = f"{''.join(fasta_file.split('.')[:-1])}.dict"
     index_file = fasta_file + ".fai"
     for file in [dict_file, index_file]:
         if os.path.isfile(file):
@@ -287,7 +286,7 @@ def main(args):
         if name not in resources and not os.path.isfile(existing_path):
             logging.error(f"{name} missing in resources and not in repo.")
             continue
-        if os.path.isfile(existing_path):
+        if os.path.isfile(existing_path) or os.path.isdir(existing_path):
             logging.info(f"{name} already exists. Skipping.")
             continue
         res_entry = resources.get(name)

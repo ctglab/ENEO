@@ -53,6 +53,7 @@ rule targets:
 
 
 include: "../workflow/rules/index.smk"
+include: "../workflow/rules/reads_trimming.smk"
 include: "../workflow/rules/alignment.smk"
 include: "../workflow/rules/quantification.smk"
 include: "../workflow/rules/bam_cleaning.smk"

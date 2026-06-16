@@ -4,9 +4,10 @@
 import pandas as pd
 import os
 import glob
+from pathlib import Path
 from snakemake.utils import min_version
 
-min_version("5.9.1")
+min_version("8.0.0")
 
 
 configfile: "config/config.yaml"
@@ -24,7 +25,8 @@ logpath.mkdir(parents=True, exist_ok=True)
 germProb_script = config["resources"]["germline_prob_script"]
 bam_final_path = config["datadirs"]["BQSR"]
 ref_fasta = config["resources"]["genome"]
-ref_dict = ref_fasta.replace(".fa.gz", ".dict")
+_ref_unzipped = ref_fasta[:-3] if ref_fasta.endswith(".gz") else ref_fasta
+ref_dict = os.path.splitext(_ref_unzipped)[0] + ".dict"
 intervals_path = os.path.join(
     config["OUTPUT_FOLDER"] + config["datadirs"]["utils"], "interval-files"
 )

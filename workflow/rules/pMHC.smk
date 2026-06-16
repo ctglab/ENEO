@@ -26,7 +26,7 @@ rule pMHCpeptides:
         os.path.join(config["OUTPUT_FOLDER"], config["datadirs"]["logs"]["pMHC"], "{patient}.log"),
     resources:
         runtime="120m",
-        ncpus=4,
+        ncpus=1,
         mem="8G",
         tmpdir=config["TEMP_DIR"],
     shell:
@@ -50,7 +50,7 @@ rule filter_peptides:
         os.path.join(config["OUTPUT_FOLDER"], config["datadirs"]["logs"]["pMHC"], "{patient}_filt.log"),
     resources:
         runtime="60m",
-        ncpus=2,
+        ncpus=1,
         mem="2G",
     container:
         "docker://ctglabcnr/eneo"

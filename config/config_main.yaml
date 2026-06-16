@@ -8,6 +8,7 @@ datadirs:
   bams: bams
   expression: expression_data
   index_folder: genome_index
+  qc_reports: qc_reports
   logs:
     align: log/align
     annotate_variants: log/annotate_variants
@@ -39,6 +40,11 @@ params:
   deepvariant:
     threads: 4
     extra: "split_skip_reads=true,channels=''"
+  fastp:
+    threads: 6
+    extra: "-q 20 -u 20 -l 50 -y 20 -x -g -3 -e 30 --detect_adapter_for_pe"
+  sortmerna:
+    threads: 8
   gatk:
     RAM: 20
     extra:
@@ -93,6 +99,7 @@ params:
         Frameshift: workflow/utils/vep_plugins/Frameshift.pm
         Wildtype: workflow/utils/vep_plugins/Wildtype.pm
 resources:
+  sortmerna_db: path/to/smr_v4.3_default_db.fasta
   dbsnps: path/to/dbsnps_withAF.vcf.gz
   deepvariant_rna_model: path/to/deepvariant_rna_model
   genome: path/to/GRCh38_GIABv3_no_alt_analysis_set_maskedGRC_decoys_MAP2K3_KMT2C_KCNJ18.fasta

@@ -1,0 +1,7 @@
+name: sortmerna
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - sortmerna=4.3.4

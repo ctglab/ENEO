@@ -46,11 +46,12 @@ rule DeepVariant:
         ),
     resources:
         runtime="480m",
-        ncpus=config["params"]["deepvariant"]["threads"],
+        ncpus=1,
         mem="16G",
     shell:
         """
         mkdir -p {params.tmp_dir}
+        zcat {input.regions} > {params.uncompressed_regions}
         run_deepvariant \
         --model_type=WES \
         --customized_model={params.rna_model} \
@@ -61,6 +62,7 @@ rule DeepVariant:
         --regions={params.uncompressed_regions} \
         --make_examples_extra_args={params.extra} \
         --intermediate_results_dir {params.tmp_dir} 
+        rm -f {params.uncompressed_regions}
         rm -rf {params.tmp_dir}
         """
 
@@ -101,7 +103,7 @@ rule SelectDeepVariantCalls:
         ),
     resources:
         runtime="20m",
-        ncpus=2,
+        ncpus=1,
         mem="8G",
     shell:
         """

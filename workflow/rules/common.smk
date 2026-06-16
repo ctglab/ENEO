@@ -25,7 +25,8 @@ logpath.mkdir(parents=True, exist_ok=True)
 germProb_script = config["resources"]["germline_prob_script"]
 bam_final_path = config["datadirs"]["BQSR"]
 ref_fasta = config["resources"]["genome"]
-ref_dict = ref_fasta.replace(".fa.gz", ".dict")
+_ref_unzipped = ref_fasta[:-3] if ref_fasta.endswith(".gz") else ref_fasta
+ref_dict = os.path.splitext(_ref_unzipped)[0] + ".dict"
 intervals_path = os.path.join(
     config["OUTPUT_FOLDER"] + config["datadirs"]["utils"], "interval-files"
 )
@@ -97,5 +98,55 @@ def sample_from_patient(df, patient_list, condition):
         )
     return samples
 
+# Build multiqc input list - sortmerna logs only in full mode
+def get_multiqc_inputs():
+    """Generate input files for multiqc based on execution mode."""
+    inputs = {
+        "fastp": expand(
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["trimmed_reads"],
+                "{patient}_fastp.json"
+            ),
+            patient=patients,
+        ),
+        "star": expand(
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["mapped_reads"],
+                "{patient}_Log.final.out"
+            ),
+            patient=patients,
+        ),
+        "markdup": expand(
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["bams"],
+                "{patient}_Aligned.sortedByCoord.out.metrics.txt"
+            ),
+            patient=patients,
+        ),
+        "salmon": expand(
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["salmon_quant"],
+                "{patient}",
+                "aux_info",
+                "meta_info.json"
+            ),
+            patient=patients,
+        ),
+    }
+    # Include sortmerna logs only in full mode
+    if config.get("execution_mode") != "CI":
+        inputs["sortmerna"] = expand(
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["trimmed_reads"],
+                "{patient}_sortmerna.log"
+            ),
+            patient=patients,
+        )
+    return inputs
 
 interval_files = get_interval_files()

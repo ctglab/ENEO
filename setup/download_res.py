@@ -204,8 +204,7 @@ def create_sequence_dictionary(fasta_file):
     """
     Create index and sequence dictionary for a FASTA file using samtools 
     """
-    dict_file = f"{''.join(fasta_file.split('.')[:-1])}.dict" 
-    fasta_file.replace(".fa", ".dict").replace(".fasta", ".dict")
+    dict_file = f"{''.join(fasta_file.split('.')[:-1])}.dict"
     index_file = fasta_file + ".fai"
     for file in [dict_file, index_file]:
         if os.path.isfile(file):
@@ -227,6 +226,32 @@ def download_deepvariant_model_files(urls: list, outfolder: str):
         if not os.path.exists(os.path.join(destpath, filename)):
             run_command(["wget", "-c", url, "-P", destpath])
     return destpath
+
+
+def download_sortmerna_db(url, keep_file, outfolder):
+    """
+    Download SortMeRNA database, extract only the needed file, and cleanup.
+    """
+    dest_file = os.path.join(outfolder, keep_file)
+    if os.path.isfile(dest_file):
+        logging.info(f"{keep_file} already exists. Skipping.")
+        return dest_file
+
+    tar_filename = url.split("/")[-1]
+    tar_path = os.path.join(outfolder, tar_filename)
+
+    logging.info(f"Downloading SortMeRNA database from {url}")
+    if not os.path.isfile(tar_path):
+        run_command(["wget", "-c", url, "-P", outfolder])
+
+    logging.info(f"Extracting {keep_file} from archive")
+    run_command(["tar", "-xzf", tar_path, "-C", outfolder, f"--wildcards", f"*/{keep_file}", "--strip-components=1"])
+
+    logging.info("Cleaning up archive")
+    if os.path.isfile(tar_path):
+        os.remove(tar_path)
+
+    return dest_file
 
 
 def convert_REDI(bed_url, bed_output, drop_intermediate=True):
@@ -261,7 +286,7 @@ def main(args):
         if name not in resources and not os.path.isfile(existing_path):
             logging.error(f"{name} missing in resources and not in repo.")
             continue
-        if os.path.isfile(existing_path):
+        if os.path.isfile(existing_path) or os.path.isdir(existing_path):
             logging.info(f"{name} already exists. Skipping.")
             continue
         res_entry = resources.get(name)
@@ -285,6 +310,8 @@ def main(args):
             path = decompress_file(download_resource(res_entry, outfolder, args.dry_run))
         elif ftype == "model":
             path = download_deepvariant_model_files(res_entry['url'], outfolder)
+        elif ftype == "sortmerna":
+            path = download_sortmerna_db(res_entry['url'], res_entry['keep_file'], outfolder)
         else:
             logging.warning(f"Unknown filetype for {name} as its {ftype}. Skipping.")
             continue

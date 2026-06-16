@@ -16,7 +16,7 @@ RUN wget https://downloads.iedb.org/tools/mhci/3.1.6/IEDB_MHC_I-3.1.6.tar.gz && 
 RUN micromamba install -n base -y \
     -c bioconda -c conda-forge \
     python=3.10 \
-    bedtools bcftools tabix samtools pip scipy pandas bionumpy cyvcf2 numpy toml pyyaml \
+    bedtools bcftools fastp tabix samtools pip scipy pandas bionumpy cyvcf2 numpy toml pyyaml \
     && micromamba clean --all --yes
 # bind netmhcpan
 ENV PATH="$MAMBA_ROOT_PREFIX/bin:$PATH:/opt/iedb/mhc_i/method/netmhcpan-4.1-executable/netmhcpan_4_1_executable/"

@@ -17,7 +17,7 @@ rule BQSR_1:
         ),
     resources:
         runtime="360m",
-        ncpus=4,
+        ncpus=1,
         mem="32G",
     threads: config["params"]["BQSR"]["threads"]
     container:
@@ -69,7 +69,7 @@ rule applyBQSR:
         "../envs/gatk.yml"
     resources:
         runtime="360m",
-        ncpus=4,
+        ncpus=1,
         mem="32G",
     log:
         os.path.join(
@@ -112,7 +112,7 @@ rule compressBam:
         "../envs/samtools.yml"
     resources:
         runtime="120m",
-        ncpus=4,
+        ncpus=1,
         mem="32G",
     log:
         os.path.join(

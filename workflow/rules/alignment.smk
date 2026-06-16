@@ -2,14 +2,30 @@ import os
 
 rule align:
     input:
-        unpack(get_fastq),
+        r1=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["trimmed_reads"],
+            "{patient}_1.fastq.gz"
+        ),
+        r2=os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["trimmed_reads"],
+            "{patient}_2.fastq.gz"
+        ),
         index=config["datadirs"]["index_folder"],
     output:
-        bam=os.path.join(
+        bam=temp(
+            os.path.join(
                 config["OUTPUT_FOLDER"],
                 config["datadirs"]["mapped_reads"],
                 "{patient}_Aligned.out.bam"
-            ),
+            )),
+        star_log=temp(
+            os.path.join(
+                config["OUTPUT_FOLDER"],
+                config["datadirs"]["mapped_reads"],
+                "{patient}_Log.final.out"
+            )),
     container:
         "docker://ctglabcnr/star"
     conda:
@@ -24,7 +40,7 @@ rule align:
     resources:
         mem="60G",
         runtime="960m",
-        ncpus=4,
+        ncpus=1,
     log:
         os.path.join(
             config["OUTPUT_FOLDER"],
@@ -47,20 +63,21 @@ rule sortAlign:
             "{patient}_Aligned.out.bam"
         ),
     output:
-            os.path.join(
-                config["OUTPUT_FOLDER"],
-                config["datadirs"]["mapped_reads"],
-                "{patient}_Aligned.sortedByCoord.out.bam"
-            ),
+        os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["mapped_reads"],
+            "{patient}_Aligned.sortedByCoord.out.bam"
+        ),
     container:
         "docker://ctglabcnr/eneo"
     conda:
         "../envs/samtools.yml" 
-    threads: config["params"]["samtools"]["threads"]
+    params:
+        threads=config["params"]["samtools"]["threads"]
     resources:
         mem="10G",
         runtime="120m",
-        ncpus=2,
+        ncpus=1,
     log:
         os.path.join(
             config["OUTPUT_FOLDER"],
@@ -69,7 +86,7 @@ rule sortAlign:
         ),
     shell:
         """
-        samtools sort -@ {threads} -o {output} {input}
+        samtools sort -@ {params.threads} -o {output} {input}
         """
 
 
@@ -81,20 +98,21 @@ rule indexSortAligned:
             "{patient}_Aligned.sortedByCoord.out.bam"
         ),
     output:
-            os.path.join(
-                config["OUTPUT_FOLDER"],
-                config["datadirs"]["mapped_reads"],
-                "{patient}_Aligned.sortedByCoord.out.bam.bai"
-            ),
+        os.path.join(
+            config["OUTPUT_FOLDER"],
+            config["datadirs"]["mapped_reads"],
+            "{patient}_Aligned.sortedByCoord.out.bam.bai"
+        ),
     container:
         "docker://ctglabcnr/eneo"
     conda:
         "../envs/samtools.yml"
-    threads: config["params"]["samtools"]["threads"]
+    params:
+        threads=config["params"]["samtools"]["threads"]
     resources:
         mem="10G",
         runtime="60m",
-        ncpus=2,
+        ncpus=1,
     log:
         os.path.join(
             config["OUTPUT_FOLDER"],
@@ -103,5 +121,5 @@ rule indexSortAligned:
         ),
     shell:
         """
-        samtools index -@ {threads} {input}
+        samtools index -@ {params.threads} {input}
         """

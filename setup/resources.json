@@ -47,5 +47,10 @@
             "https://storage.googleapis.com/deepvariant/models/DeepVariant/1.4.0/DeepVariant-inception_v3-1.4.0+data-rnaseq_standard/model.ckpt.index",
             "https://storage.googleapis.com/deepvariant/models/DeepVariant/1.4.0/DeepVariant-inception_v3-1.4.0+data-rnaseq_standard/model.ckpt.meta"
         ]
+    },
+    "sortmerna_db": {
+        "filetype": "sortmerna",
+        "url": "https://github.com/biocore/sortmerna/releases/download/v4.3.4/database.tar.gz",
+        "keep_file": "smr_v4.3_default_db.fasta"
     }
 }

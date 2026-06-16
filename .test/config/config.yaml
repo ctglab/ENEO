@@ -38,8 +38,11 @@ params:
     RAM: 30000
     threads: 4
   deepvariant:
-    extra: "split_skip_reads=true,channels=''" 
+    extra: "split_skip_reads=true,channels=''"
     threads: 4
+  fastp:
+    threads: 4
+    extra: "-q 20 -u 20 -l 50 -y 20 -x -g -3 -e 30 --detect_adapter_for_pe"
   gatk:
     RAM: 20
     extra:

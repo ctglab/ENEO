@@ -81,7 +81,7 @@ rule MergeCalls:
         ),
     resources:
         runtime="20m",
-        ncpus=2,
+        ncpus=1,
         mem="8G",
     shell:
         """
@@ -138,7 +138,7 @@ rule vcfanno:
         ),
     resources:
         runtime="60m",
-        ncpus=4,
+        ncpus=1,
         mem="16G",
     container: "docker://ctglabcnr/eneo"
     conda: "../envs/vep.yml"

@@ -9,8 +9,8 @@ theme:
   favicon: assets/eneo.png
   name: material
   font:
-    text: Inter
-    code: IBM Plex Mono
+    text: Geist
+    code: Geist Mono
   features:
     - navigation.tabs
     - navigation.sections
@@ -25,16 +25,16 @@ theme:
   palette:
     - scheme: default
       toggle:
-        icon: material/toggle-switch-off-outline
+        icon: material/brightness-7
         name: Switch to dark mode
-      primary: deep purple
-      accent: cyan
+      primary: white
+      accent: indigo
     - scheme: slate
       toggle:
-        icon: material/toggle-switch
+        icon: material/brightness-4
         name: Switch to light mode
-      primary: deep purple
-      accent: cyan
+      primary: black
+      accent: indigo
 
 markdown_extensions:
   - pymdownx.highlight:

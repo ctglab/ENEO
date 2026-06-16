@@ -18,12 +18,15 @@ python3 download_res.py -o <path_for_resources>
 
 This script will download different resources:
 
-- genome from GIAB, the `GRCh38_GIABv3_no_alt_analysis_set_maskedGRC_decoys_MAP2K3_KMT2C_KCNJ18` version. Why? Look [here](https://gist.github.com/brentp/1935e9bada1ea3185fbbc132019a619e). 
-- transcriptome and GTF from [Gencode](https://www.gencodegenes.org/human/)
-- 1000G, ExAC, 1000g PoN from the GATK resource bundle
-- dbSNPs ALFA from NCBI
-- REDI portal
-- VEP cache (v105)
+- genome from GIAB, the `GRCh38_GIABv3_no_alt_analysis_set_maskedGRC_decoys_MAP2K3_KMT2C_KCNJ18` version. Why? Look [here](https://gist.github.com/brentp/1935e9bada1ea3185fbbc132019a619e).
+- transcriptome and GTF from [Gencode](https://www.gencodegenes.org/human/) (v47)
+- 1000G, known indels, 1000G PoN from the GATK resource bundle
+- gnomAD somatic allele frequencies (hg38)
+- dbSNP ALFA population frequencies from NCBI
+- REDI portal RNA-editing sites
+- VEP offline cache (v105, GRCh38)
+- SortMeRNA default rRNA database (v4.3.4, `smr_v4.3_default_db.fasta`), used for ribosomal RNA depletion before alignment
+- DeepVariant RNA model (v1.4.0, inception_v3 architecture, RNA-seq standard), required for RNA-aware variant calling
 
 
 ## What if I already got some of them?

@@ -2,6 +2,9 @@
 
 ENEO is a [Snakemake](https://snakemake.readthedocs.io/en/stable/) workflow developed for the identification of cancer neoantigens using solely the tumor RNAseq, without requiring matched controls or additional sequencing experiments. You could read more from the publication [here](https://academic.oup.com/nargab/article/7/3/lqaf026/8196479).
 
+## Pipeline overview
+
+Raw reads are first trimmed with [fastp](https://github.com/OpenGene/fastp) to remove adapters and low-quality bases, then passed through [SortMeRNA](https://github.com/sortmerna/sortmerna) to deplete ribosomal RNA reads before alignment. After STAR alignment and base quality score recalibration (BQSR), variant calling is performed in parallel by [Strelka2](https://github.com/Illumina/strelka) and [DeepVariant](https://github.com/google/deepvariant) using an RNA-specific model. Only variants concordantly called by both callers are retained and carried forward for annotation and neoantigen prediction.
 
 ## Quick Start
 
@@ -19,25 +22,23 @@ git clone https://github.com/ctglab/ENEO.git
 
 The next step is to setup resources, as reported in the [dedicated section](https://ctglab.github.io/ENEO/resources). 
 
-Then update the configuration file in `config/config.yaml` following the instructions in the [dedicated section](https://ctglab.github.io/ENEO/setup).
+Then update the configuration file in `config/config_main.yaml` following the instructions in the [dedicated section](https://ctglab.github.io/ENEO/setup).
 
-The next step is to setup patients and their relative sequencing files, defined in the files `units.csv` and `patients.csv`. The pipeline is designed to be executed both from paired end `FASTQ` files. Edit then the `units.csv` file to specify the **absolute** path for sequencing files of each patient, accordingly:
+The next step is to define the patients and their sequencing files. Edit `units.csv` to specify the **absolute** paths to the paired-end FASTQ files for each patient:
 
-- if you're executing the pipeline in `full` mode, you had to provide paths to the paired end fastq files, as detailed.
+```
+patient,fq1,fq2
+Pat_01,/path/to/Pat_01_1.fastq.gz,/path/to/Pat_01_2.fastq.gz
+Pat_02,/path/to/Pat_02_1.fastq.gz,/path/to/Pat_02_2.fastq.gz
+```
 
-    ```
-    patient,fq1,fq2
-    Pat_01,/path/to/Pat_01_1.fastq.gz,/path/to/Pat_01_2.fastq.gz
-    Pat_02,/path/to/Pat_02_1.fastq.gz,/path/to/Pat_02_2.fastq.gz
-    ```
+Edit also `patients.csv` to list the patients to be processed. All entries must match the patient identifiers in `units.csv`.
 
-Edit also the `patients.csv` file to add the list of patients to be processed. All the listed patients must match the patients in the `units.csv` file.
-
-    ```
-    patient
-    Pat_01
-    Pat_02
-    ```
+```
+patient
+Pat_01
+Pat_02
+```
 
 ## Executing the pipeline
 

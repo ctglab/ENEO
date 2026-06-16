@@ -9,12 +9,12 @@ theme:
   favicon: assets/eneo.png
   name: material
   font:
-    text: Manrope
+    text: Inter
     code: IBM Plex Mono
   features:
     - navigation.tabs
     - navigation.sections
-    - toc.integrate
+    - navigation.footer
     - navigation.top
     - search.suggest
     - search.highlight
@@ -25,16 +25,16 @@ theme:
   palette:
     - scheme: default
       toggle:
-        icon: material/toggle-switch-off-outline 
+        icon: material/toggle-switch-off-outline
         name: Switch to dark mode
-      primary: indigo
-      accent: indigo
-    - scheme: slate 
+      primary: deep purple
+      accent: cyan
+    - scheme: slate
       toggle:
         icon: material/toggle-switch
-        name: Switch to light mode    
-      primary: black
-      accent: indigo
+        name: Switch to light mode
+      primary: deep purple
+      accent: cyan
 
 markdown_extensions:
   - pymdownx.highlight:
@@ -50,4 +50,4 @@ markdown_extensions:
   - pymdownx.mark
   - attr_list
 copyright: |
-  &copy; 2025 <a href="https://github.com/ctglab"  target="_blank" rel="noopener">Computational and Translational Genomics Laboratory (CTGLab)</a>
+  &copy; 2026 <a href="https://github.com/ctglab" target="_blank" rel="noopener">Computational and Translational Genomics Laboratory (CTGLab)</a>

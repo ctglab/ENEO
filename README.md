@@ -3,8 +3,9 @@
 ![GitHub release](https://img.shields.io/github/release/ctglab/ENEO.svg)
 [![Snakemake](https://img.shields.io/badge/snakemake->8.0.0-brightgreen.svg)](https://snakemake.github.io)
 [![Linting](https://github.com/ctglab/ENEO/actions/workflows/formatting.yml/badge.svg?branch=main)](https://github.com/ctglab/ENEO/actions/workflows/formatting.yml)
-[![Testing](https://github.com/ctglab/ENEO/actions/workflows/testing.yml/badge.svg?branch=main)](https://github.com/ctglab/ENEO/actions/workflows/testing.yml)
+[![Dry-run](https://img.shields.io/github/actions/workflow/status/ctglab/ENEO/testing.yml?branch=main&label=dry-run)](https://github.com/ctglab/ENEO/actions/workflows/testing.yml)
 ![Docker image building](https://github.com/ctglab/ENEO/actions/workflows/docker.yml/badge.svg)
+[![Documentation](https://img.shields.io/badge/docs-ctglab.github.io%2FENEO-blue)](https://ctglab.github.io/ENEO)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14931774.svg)](https://doi.org/10.5281/zenodo.14931774)
 

@@ -245,7 +245,7 @@ def download_sortmerna_db(url, keep_file, outfolder):
         run_command(["wget", "-c", url, "-P", outfolder])
 
     logging.info(f"Extracting {keep_file} from archive")
-    run_command(["tar", "-xzf", tar_path, "-C", outfolder, f"--wildcards", f"*/{keep_file}", "--strip-components=1"])
+    run_command(["tar", "-xzf", tar_path, "-C", outfolder, keep_file])
 
     logging.info("Cleaning up archive")
     if os.path.isfile(tar_path):

@@ -1,4 +1,4 @@
-# Running ENEO from pre-aligned BAM files (variant calling only)
+# Running ENEO from BAM files
 
 If your samples have already been aligned, you can skip trimming, rRNA removal, STAR
 alignment, Salmon quantification, HLA typing, and neoantigen prediction, and run only

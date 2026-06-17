@@ -1,0 +1,47 @@
+/* ENEO docs — Vercel-style monochrome system
+   Overrides Material for MkDocs CSS custom properties per color scheme. */
+
+:root {
+  --eneo-radius: 8px;
+  --eneo-radius-sm: 6px;
+}
+
+/* ---- Light scheme ---- */
+[data-md-color-scheme="default"] {
+  --md-default-bg-color:        #ffffff;
+  --md-default-fg-color:        #0a0a0a;
+  --md-default-fg-color--light: #666666;
+  --md-default-fg-color--lighter: #8f8f8f;
+  --md-default-fg-color--lightest: #eaeaea;
+
+  --md-primary-fg-color:        #0a0a0a; /* header bg */
+  --md-primary-bg-color:        #ffffff; /* header fg */
+  --md-accent-fg-color:         #0070f3;
+  --md-typeset-a-color:         #0070f3;
+
+  --md-code-bg-color:           #fafafa;
+  --md-code-fg-color:           #0a0a0a;
+
+  --eneo-border:                #eaeaea;
+  --eneo-muted:                 #666666;
+}
+
+/* ---- Dark scheme ---- */
+[data-md-color-scheme="slate"] {
+  --md-default-bg-color:        #0a0a0a;
+  --md-default-fg-color:        #ededed;
+  --md-default-fg-color--light: #a1a1a1;
+  --md-default-fg-color--lighter: #7a7a7a;
+  --md-default-fg-color--lightest: #1f1f1f;
+
+  --md-primary-fg-color:        #0a0a0a;
+  --md-primary-bg-color:        #ededed;
+  --md-accent-fg-color:         #3291ff;
+  --md-typeset-a-color:         #3291ff;
+
+  --md-code-bg-color:           #111111;
+  --md-code-fg-color:           #ededed;
+
+  --eneo-border:                #1f1f1f;
+  --eneo-muted:                 #a1a1a1;
+}

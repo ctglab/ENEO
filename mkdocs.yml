@@ -36,6 +36,12 @@ theme:
       primary: black
       accent: indigo
 
+extra_css:
+  - stylesheets/extra.css
+
+exclude_docs: |
+  README.md
+
 markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true

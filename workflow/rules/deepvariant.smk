@@ -77,6 +77,9 @@ rule SelectDeepVariantCalls:
         giab_intervals=os.path.abspath(
             config["resources"]["giab_intervals"]
         ),
+        genome_file=os.path.abspath(
+            "workflow/supplementary_res/genome_order.txt"
+        ),
     output:
         vcf=os.path.join(
             config["OUTPUT_FOLDER"],
@@ -108,7 +111,7 @@ rule SelectDeepVariantCalls:
     shell:
         """
         bcftools view -e "GT='mis'" {input.vcf} |\
-         bcftools view -i "FILTER='PASS' & (DP > 5) & (FORMAT/AD[0:1] > 2)" --threads {threads} | bedtools intersect -header -v -a stdin -b {input.giab_intervals} \
+         bcftools view -i "FILTER='PASS' & (DP > 5) & (FORMAT/AD[0:1] > 2)" --threads {threads} | bedtools intersect -header -v -a stdin -b {input.giab_intervals} -g {input.genome_file} \
          -sorted | bgzip -c > {output.vcf}
         tabix -p vcf {output.vcf}
         """

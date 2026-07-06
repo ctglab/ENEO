@@ -94,7 +94,7 @@ rule Strelka2:
         ),
     resources:
         runtime="240m",
-        ncpus=1,
+        ncpus=config["params"]["strelka2"]["threads"],
         mem="16G",
     shell:
         """

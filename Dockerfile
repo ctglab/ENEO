@@ -10,8 +10,13 @@ RUN mkdir -p /opt/iedb && chown mambauser:mambauser /opt/iedb
 USER mambauser
 WORKDIR /opt/iedb
 RUN IEDB_MHCI_URL="https://downloads.iedb.org/tools/mhci/LATEST" && \
-    IEDB_MHCI_ARCHIVE=$(wget -qO- "$IEDB_MHCI_URL/" | grep -oE 'IEDB_MHC_I-[0-9.]+\.tar\.gz' | head -n1) && \
-    wget "$IEDB_MHCI_URL/$IEDB_MHCI_ARCHIVE" && \
+    WGET_OPTS="--tries=5 --waitretry=10 --timeout=30 --user-agent=Mozilla/5.0" && \
+    IEDB_MHCI_ARCHIVE=$(wget -qO- $WGET_OPTS "$IEDB_MHCI_URL/" | grep -oE 'IEDB_MHC_I-[0-9.]+\.tar\.gz' | head -n1) && \
+    if [ -z "$IEDB_MHCI_ARCHIVE" ]; then \
+        echo "ERROR: could not resolve the latest IEDB MHC-I archive name from $IEDB_MHCI_URL/" >&2; \
+        exit 1; \
+    fi && \
+    wget $WGET_OPTS "$IEDB_MHCI_URL/$IEDB_MHCI_ARCHIVE" && \
     tar -xzf "$IEDB_MHCI_ARCHIVE" && \
     rm "$IEDB_MHCI_ARCHIVE"
 # conda dependencies

@@ -9,9 +9,11 @@ RUN apt-get update -qq && \
 RUN mkdir -p /opt/iedb && chown mambauser:mambauser /opt/iedb
 USER mambauser
 WORKDIR /opt/iedb
-RUN wget https://downloads.iedb.org/tools/mhci/3.1.6/IEDB_MHC_I-3.1.6.tar.gz && \
-    tar -xzf IEDB_MHC_I-3.1.6.tar.gz && \
-    rm IEDB_MHC_I-3.1.6.tar.gz
+RUN IEDB_MHCI_URL="https://downloads.iedb.org/tools/mhci/LATEST" && \
+    IEDB_MHCI_ARCHIVE=$(wget -qO- "$IEDB_MHCI_URL/" | grep -oE 'IEDB_MHC_I-[0-9.]+\.tar\.gz' | head -n1) && \
+    wget "$IEDB_MHCI_URL/$IEDB_MHCI_ARCHIVE" && \
+    tar -xzf "$IEDB_MHCI_ARCHIVE" && \
+    rm "$IEDB_MHCI_ARCHIVE"
 # conda dependencies
 RUN micromamba install -n base -y \
     -c bioconda -c conda-forge \

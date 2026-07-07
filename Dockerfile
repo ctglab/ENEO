@@ -11,11 +11,18 @@ USER mambauser
 WORKDIR /opt/iedb
 RUN IEDB_MHCI_URL="https://downloads.iedb.org/tools/mhci/LATEST" && \
     WGET_OPTS="--tries=5 --waitretry=10 --timeout=30 --user-agent=Mozilla/5.0" && \
-    IEDB_MHCI_ARCHIVE=$(wget -qO- $WGET_OPTS "$IEDB_MHCI_URL/" | grep -oE 'IEDB_MHC_I-[0-9.]+\.tar\.gz' | head -n1) && \
-    if [ -z "$IEDB_MHCI_ARCHIVE" ]; then \
-        echo "ERROR: could not resolve the latest IEDB MHC-I archive name from $IEDB_MHCI_URL/" >&2; \
+    echo "Fetching IEDB MHC-I directory listing from $IEDB_MHCI_URL/ ..." && \
+    if ! IEDB_MHCI_LISTING=$(wget $WGET_OPTS -qO- "$IEDB_MHCI_URL/"); then \
+        echo "ERROR: failed to fetch IEDB listing from $IEDB_MHCI_URL/" >&2; \
         exit 1; \
     fi && \
+    IEDB_MHCI_ARCHIVE=$(printf '%s\n' "$IEDB_MHCI_LISTING" | grep -oE 'IEDB_MHC_I-[0-9.]+\.tar\.gz' | sort -V | tail -n1 || true) && \
+    if [ -z "$IEDB_MHCI_ARCHIVE" ]; then \
+        echo "ERROR: could not resolve the latest IEDB MHC-I archive name; listing returned was:" >&2; \
+        printf '%s\n' "$IEDB_MHCI_LISTING" >&2; \
+        exit 1; \
+    fi && \
+    echo "Resolved IEDB MHC-I archive: $IEDB_MHCI_ARCHIVE" && \
     wget $WGET_OPTS "$IEDB_MHCI_URL/$IEDB_MHCI_ARCHIVE" && \
     tar -xzf "$IEDB_MHCI_ARCHIVE" && \
     rm "$IEDB_MHCI_ARCHIVE"

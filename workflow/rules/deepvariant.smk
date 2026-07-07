@@ -26,8 +26,11 @@ rule DeepVariant:
         rna_model=os.path.join(
             os.path.abspath(config["resources"]["deepvariant_rna_model"]), "model.ckpt"
         ),
-        uncompressed_regions=lambda wc, input:
-            input.regions.replace('.gz',''),
+        uncompressed_regions=lambda wc: os.path.join(
+            config["OUTPUT_FOLDER"],
+            "tmp",
+            f"{wc.patient}_intervals_coding.BED",
+        ),
         tmp_dir=os.path.join(
             config["OUTPUT_FOLDER"],
             "tmp",

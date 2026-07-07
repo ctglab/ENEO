@@ -9,21 +9,17 @@ RUN apt-get update -qq && \
 RUN mkdir -p /opt/iedb && chown mambauser:mambauser /opt/iedb
 USER mambauser
 WORKDIR /opt/iedb
-RUN IEDB_MHCI_URL="https://downloads.iedb.org/tools/mhci/LATEST" && \
-    WGET_OPTS="--tries=5 --waitretry=10 --timeout=30 --user-agent=Mozilla/5.0" && \
-    echo "Fetching IEDB MHC-I directory listing from $IEDB_MHCI_URL/ ..." && \
-    if ! IEDB_MHCI_LISTING=$(wget $WGET_OPTS -qO- "$IEDB_MHCI_URL/"); then \
-        echo "ERROR: failed to fetch IEDB listing from $IEDB_MHCI_URL/" >&2; \
+# IEDB MHC-I tools (netmhcpan). Pulled from a GitHub release mirror because
+# downloads.iedb.org blocks GitHub Actions runner IPs. The mirror asset is
+# version-less, so updating IEDB is a re-run of setup/mirror_iedb.sh with no
+# change here. Override with --build-arg IEDB_MHCI_URL=... to pull elsewhere.
+ARG IEDB_MHCI_URL=https://github.com/ctglab/ENEO/releases/download/iedb-tools/IEDB_MHC_I.tar.gz
+RUN IEDB_MHCI_ARCHIVE="$(basename "$IEDB_MHCI_URL")" && \
+    echo "Downloading IEDB MHC-I tools from $IEDB_MHCI_URL ..." && \
+    if ! wget --tries=5 --waitretry=10 --timeout=30 "$IEDB_MHCI_URL" -O "$IEDB_MHCI_ARCHIVE"; then \
+        echo "ERROR: failed to download IEDB MHC-I tools from $IEDB_MHCI_URL" >&2; \
         exit 1; \
     fi && \
-    IEDB_MHCI_ARCHIVE=$(printf '%s\n' "$IEDB_MHCI_LISTING" | grep -oE 'IEDB_MHC_I-[0-9.]+\.tar\.gz' | sort -V | tail -n1 || true) && \
-    if [ -z "$IEDB_MHCI_ARCHIVE" ]; then \
-        echo "ERROR: could not resolve the latest IEDB MHC-I archive name; listing returned was:" >&2; \
-        printf '%s\n' "$IEDB_MHCI_LISTING" >&2; \
-        exit 1; \
-    fi && \
-    echo "Resolved IEDB MHC-I archive: $IEDB_MHCI_ARCHIVE" && \
-    wget $WGET_OPTS "$IEDB_MHCI_URL/$IEDB_MHCI_ARCHIVE" && \
     tar -xzf "$IEDB_MHCI_ARCHIVE" && \
     rm "$IEDB_MHCI_ARCHIVE"
 # conda dependencies

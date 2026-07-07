@@ -34,6 +34,6 @@ This script will download different resources:
 The configuration script works by controlling the existence of the files whose path is written inside the main configuration file `conf_main.yaml`, located in the `config` folder. If any of those files are already in your machine, just edit the configuration file adding the right *absolute* path. The script will check for its presence without re-downloading it.
 
 !!! failure
-    The annotation for files must be concordant throughout the pipeline, to avoid any error. The chromosome notation in use is the one by Gencode, thus with `chr`. Be sure to add resources manually only if you're sure of their concordance.
+    The annotation for files must be concordant throughout the pipeline, to avoid any error. The chromosome notation in use is the one by Gencode, thus with `chr`. Be sure to add resources manually only if you're sure of their concordance. If you're bringing your own BAM instead of running from FASTQ, see the [reference concordance](bam_only_mode.md#reference-concordance) checks before running.
 
 

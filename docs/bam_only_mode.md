@@ -8,6 +8,52 @@ pipeline expects them.
 
 ---
 
+## Reference concordance
+
+Every rule downstream of `AddGrp` (`SplitNCigarReads`, `BaseRecalibrator`, `ApplyBQSR`,
+Strelka2, DeepVariant) calls `-R {resources.genome}` against the BAM you supplied. GATK
+requires the BAM's `@SQ` header — contig names, lengths, and order — to match that
+FASTA's sequence dictionary exactly, so a BAM aligned against a different reference than
+the one configured under `resources.genome` (see [Setup resources](resources.md)) will
+make the pipeline fail partway through, usually with a GATK error along the lines of
+`Input files reads and reference have incompatible contigs`.
+
+A contig-order mismatch alone doesn't always raise an error: `SelectStrelka2Calls` and
+`SelectDeepVariantCalls` filter through `bedtools intersect -sorted -g
+workflow/supplementary_res/genome_order.txt`, and `bedtools` silently produces wrong
+output rather than failing if the VCF's contig order doesn't match that file.
+
+Before placing a BAM at the expected input path, compare its dictionary against ENEO's
+reference:
+
+```bash
+samtools view -H your.bam | grep '^@SQ'
+samtools dict /path/to/GRCh38_GIABv3_..._KCNJ18.fasta | grep '^@SQ'
+```
+
+Names, lengths and contig count must match exactly. If they don't:
+
+- If the only difference is chromosome naming (same assembly, same contigs and lengths,
+  just `1`/`MT` instead of `chr1`/`chrM`), reheader the BAM in place — coordinates don't
+  change, only the header:
+
+    ```bash
+    samtools view -H your.bam \
+      | sed -E 's/SN:([0-9XY]+)/SN:chr\1/; s/SN:MT/SN:chrM/' \
+      > new_header.sam
+    samtools reheader new_header.sam your.bam > your.renamed.bam
+    samtools sort -o your.renamed.sorted.bam your.renamed.bam
+    ```
+
+    Re-run the `@SQ` comparison above on the result to confirm the dictionaries now
+    match.
+
+- Otherwise (different patch level, missing/extra alt or decoy contigs, different
+  masking) there's no safe reheader fix, since the underlying sequence differs from
+  ENEO's reference. Realign from FASTQ against `resources.genome` instead.
+
+---
+
 ## Step 1 — Edit `workflow/Snakefile`
 
 ### 1a. Remove upstream and downstream includes

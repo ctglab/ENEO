@@ -104,6 +104,7 @@ resources:
   deepvariant_rna_model: path/to/deepvariant_rna_model
   genome: path/to/GRCh38_GIABv3_no_alt_analysis_set_maskedGRC_decoys_MAP2K3_KMT2C_KCNJ18.fasta
   germline_prob_script: workflow/scripts/germProb.py
+  genome_order: workflow/supplementary_res/genome_order.txt
   giab_intervals: workflow/supplementary_res/GRCh38_giab_merged.bed.gz
   gnomad: path/to/af-only-gnomad.hg38.vcf.gz
   gsnps: path/to/1000G_phase1.snps.high_confidence.hg38.vcf.gz

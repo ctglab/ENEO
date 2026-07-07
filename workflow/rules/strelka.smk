@@ -115,7 +115,7 @@ rule SelectStrelka2Calls:
             config["resources"]["giab_intervals"]
         ),
         genome_file=os.path.abspath(
-            "workflow/supplementary_res/genome_order.txt"
+            config["resources"]["genome_order"]
         ),
     output:
         vcf=os.path.join(

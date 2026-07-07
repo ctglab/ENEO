@@ -101,6 +101,7 @@ resources:
   dbsnps: "test_data/dbsnpALFA_chr6.vcf.gz"
   genome: "test_data/genome_chr6.fa"
   germline_prob_script: "../workflow/scripts/germProb.py"
+  genome_order: "../workflow/supplementary_res/genome_order.txt"
   giab_intervals: "../workflow/supplementary_res/GRCh38_giab_merged.bed.gz"
   gnomad: "test_data/gnomad_chr6.vcf.gz"
   gsnps: "test_data/1000G_snsp_chr6.vcf.gz"
